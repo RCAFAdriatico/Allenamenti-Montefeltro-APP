@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Come si usa l'app · Montefeltro</title>
+<meta name="theme-color" content="#d9161c">
+<link rel="icon" href="icona.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#f6f4f3;--surface:#fff;--ink:#1b1716;--muted:#6c6461;--line:#e4dedb;--red:#d9161c;--red-soft:#fbe3e2;--remo:#1f5fa8;--remo-soft:#e3edf8;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#141111;--surface:#1e1a19;--ink:#f3eeec;--muted:#a59c99;--line:#332c2a;--red:#ff4a4f;--red-soft:#3a1a1b;--remo:#6ea6ea;--remo-soft:#18263a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141111;--surface:#1e1a19;--ink:#f3eeec;--muted:#a59c99;--line:#332c2a;--red:#ff4a4f;--red-soft:#3a1a1b;--remo:#6ea6ea;--remo-soft:#18263a;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:var(--body);font-size:17px;line-height:1.5;padding:16px max(16px,env(safe-area-inset-left)) 48px}
+.wrap{max-width:720px;margin:0 auto}
+header{display:flex;align-items:center;gap:14px;margin:4px 0 18px}
+header img{width:84px;height:auto}
+.eyebrow{font-family:var(--display);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:14px;color:var(--red)}
+h1{font-family:var(--display);font-weight:700;font-size:34px;line-height:1;margin:2px 0 0}
+h2{font-family:var(--display);font-weight:700;font-size:28px;margin:34px 0 6px;padding-bottom:6px;border-bottom:3px solid var(--red)}
+h3{font-family:var(--display);font-weight:700;font-size:22px;margin:0 0 4px}
+p{margin:6px 0}
+a{color:var(--red)}
+.toc{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
+.toc a{font-family:var(--display);font-weight:700;font-size:18px;text-decoration:none;border:2px solid var(--ink);color:var(--ink);border-radius:999px;padding:6px 14px}
+.toc a.coachlink{border-color:var(--remo);color:var(--remo)}
+.open{display:inline-block;margin-top:12px;font-family:var(--display);font-weight:700;font-size:20px;background:var(--red);color:#fff;text-decoration:none;border-radius:12px;padding:10px 18px}
+.step{display:grid;grid-template-columns:1fr;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0}
+.step .n{font-family:var(--display);font-weight:700;color:var(--red);font-size:15px;letter-spacing:.06em;text-transform:uppercase}
+.coach .step .n{color:var(--remo)}
+.step ul,.step ol{margin:6px 0;padding-left:22px}
+.step li{margin:3px 0}
+.shots{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start}
+.shots img{width:100%;max-width:320px;height:auto;border-radius:12px;border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.08);background:#fff}
+@media (min-width:700px){.step{grid-template-columns:1fr 300px;align-items:start}.shots img{max-width:300px}}
+.tip{background:var(--red-soft);border-radius:10px;padding:8px 12px;font-size:15px}
+.coach .tip{background:var(--remo-soft)}
+.note{color:var(--muted);font-size:15px}
+footer{margin-top:36px;color:var(--muted);font-size:14px;text-align:center}
+@media print{body{font-size:11pt;padding:0}.step{grid-template-columns:1fr 430px!important;padding:10px;margin:8px 0}.shots{flex-wrap:nowrap}.shots img{max-width:210px!important;flex:1 1 0;min-width:0}.step{break-inside:avoid;box-shadow:none}.open,.toc{display:none}h2{break-before:page}h2.first{break-before:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <img src="icona.png" alt="Canottieri Montefeltro">
+  <div><div class="eyebrow">Canottieri Montefeltro · Under 19</div><h1>Come si usa l'app</h1></div>
+</header>
+<p>Nell'app trovi gli allenamenti di ogni giorno con le isole nell'ordine del tuo gruppo, le foto degli esercizi, le schede PDF, il tuo programma personale e i tuoi test. A ogni seduta segni la presenza.</p>
+<div class="toc"><a href="#atleti">Per gli atleti</a><a class="coachlink" href="#allenatore">Per l'allenatore</a></div>
+<a class="open" href="./">Apri l'app →</a>
+
+<h2 id="atleti" class="first">Per gli atleti</h2>
+
+<div class="step"><div>
+  <div class="n">1 · Installa l'app sul telefono</div>
+  <h3>Aggiungila alla schermata Home</h3>
+  <p>Apri il link dell'app dal telefono:</p>
+  <p><b>rcafadriatico.github.io/Allenamenti-Montefeltro-APP</b></p>
+  <ul><li><b>iPhone (Safari):</b> tasto Condividi ⬆️ → «Aggiungi alla schermata Home»</li>
+  <li><b>Android (Chrome):</b> menu ⋮ → «Aggiungi a schermata Home»</li></ul>
+  <p>Così la trovi tra le app, con il logo della Montefeltro.</p>
+</div></div>
+
+<div class="step"><div>
+  <div class="n">2 · Entra</div>
+  <h3>Username e PIN</h3>
+  <p>Nella scheda <b>Chi sei</b> scrivi il tuo <b>username</b> e, se l'allenatore te l'ha dato, il <b>PIN</b>. Poi premi <b>Entra</b>. Lo fai una volta sola: il telefono si ricorda di te.</p>
+  <p class="tip">Username e PIN te li dà l'allenatore. Non darli a nessuno: servono a segnare la presenza e a vedere il tuo programma e i tuoi test.</p>
+</div><div class="shots"><img src="tutorial/a1_accesso.jpg" alt="Schermata di accesso con username e PIN"></div></div>
+
+<div class="step"><div>
+  <div class="n">3 · Giorno e gruppo</div>
+  <h3>Scegli il giorno e il tuo gruppo</h3>
+  <p>In alto tocca il <b>giorno</b> (di solito è già quello di oggi) e il tuo <b>gruppo</b>, da G1 a G4. Il telefono si ricorda il gruppo.</p>
+  <p>Se fai <b>4 sedute</b> a settimana, martedì e giovedì per te sono in grigio: niente seduta.</p>
+</div><div class="shots"><img src="tutorial/a2_giorno_gruppo.jpg" alt="Scelta del giorno e del gruppo"></div></div>
+
+<div class="step"><div>
+  <div class="n">4 · Presenza</div>
+  <h3>Premi «Sono presente»</h3>
+  <p>Quando arrivi in palestra premi <b>Sono presente</b>, una volta per seduta. Compare l'ora in cui l'hai segnata.</p>
+</div><div class="shots"><img src="tutorial/a3_presente.jpg" alt="Presenza segnata"></div></div>
+
+<div class="step"><div>
+  <div class="n">5 · Isole</div>
+  <h3>Pianta e isole nell'ordine del tuo gruppo</h3>
+  <p>La <b>pianta</b> mostra dove sono le isole in palestra. Sotto trovi le isole nell'ordine in cui le fa il tuo gruppo:</p>
+  <ul><li><b>Blu · Remoergometro:</b> il lavoro da fare, per esempio «1' di partenza + 9' a 22 colpi»</li>
+  <li><b>Rosso · Esercizi:</b> gli esercizi del circuito, con la foto</li></ul>
+  <p>Se c'è, il riquadro nero <b>Tabata</b> ti dice cosa impostare nell'app Tabata: è uguale per tutti.</p>
+</div><div class="shots"><img src="tutorial/a4_pianta.jpg" alt="Pianta della palestra"><img src="tutorial/a5_isole.jpg" alt="Isole remo e circuito"></div></div>
+
+<div class="step"><div>
+  <div class="n">6 · Esercizi</div>
+  <h3>Tocca un esercizio per vedere come si fa</h3>
+  <p>Tocca il nome o la foto di un esercizio: si apre la scheda con la foto grande e, quando ci sono, la spiegazione e i pesi indicativi (M = maschi, W = femmine).</p>
+</div><div class="shots"><img src="tutorial/a6_esercizio.jpg" alt="Scheda di un esercizio"></div></div>
+
+<div class="step"><div>
+  <div class="n">7 · In aggiunta</div>
+  <h3>Allenamento in aggiunta</h3>
+  <p>Alcuni giorni, dopo le isole, c'è un riquadro <b>In aggiunta</b> con un altro lavoro, per esempio il mercoledì «Pesi + remoergometro».</p>
+</div><div class="shots"><img src="tutorial/a7_aggiunta.jpg" alt="Allenamento in aggiunta"></div></div>
+
+<div class="step"><div>
+  <div class="n">8 · Il tuo programma</div>
+  <h3>Programma personale</h3>
+  <p>Se l'allenatore ti prepara degli allenamenti solo per te, li trovi nel riquadro blu <b>Il tuo programma personale</b>, sotto la presenza. Li vedi solo tu.</p>
+</div><div class="shots"><img src="tutorial/a12_programma.jpg" alt="Programma personale"></div></div>
+
+<div class="step"><div>
+  <div class="n">9 · Test</div>
+  <h3>I miei test</h3>
+  <p>Apri <b>I miei test</b> per inserire i tuoi test: <b>500, 1000 e 2000 m al remoergometro</b> e <b>4000 m bike</b>.</p>
+  <ol><li>Scegli il test e la data</li><li>Scrivi il tempo come minuti:secondi, per esempio <b>7:05,3</b></li><li>Premi <b>Salva test</b></li></ol>
+  <p>In alto vedi il tuo <b>miglior tempo</b> per ogni test, con il passo /500. Sotto c'è la <b>cronologia</b>: ogni test con la differenza rispetto al precedente (verde se sei migliorato).</p>
+</div><div class="shots"><img src="tutorial/a13_test.jpg" alt="I miei test"></div></div>
+
+<div class="step"><div>
+  <div class="n">10 · Altro</div>
+  <h3>Altri allenamenti, schede PDF e libreria</h3>
+  <ul><li><b>Altri allenamenti:</b> la libreria dei lavori al remoergometro e altri allenamenti di bike, pesi e circuito</li>
+  <li><b>Schede PDF:</b> tocca una scheda per aprirla, con «Scarica PDF» la salvi sul telefono</li>
+  <li><b>Libreria esercizi:</b> tutti gli esercizi con le foto, divisi per categoria e con la ricerca</li></ul>
+</div><div class="shots"><img src="tutorial/a8_altri.jpg" alt="Altri allenamenti"><img src="tutorial/a11_libreria.jpg" alt="Libreria esercizi"></div></div>
+
+<h2 id="allenatore">Per l'allenatore</h2>
+<div class="coach">
+
+<div class="step"><div>
+  <div class="n">1 · Accesso</div>
+  <h3>«Sono l'allenatore»</h3>
+  <p>In fondo all'app tocca <b>Sono l'allenatore</b> e scrivi la password. Compaiono l'area allenatore, l'elenco atleti, i test e il registro presenze. Per uscire: «Esci dall'area allenatore».</p>
+  <p class="tip">La password si cambia nel codice dello script del foglio Google (riga 8), poi si rifà il deployment come nuova versione.</p>
+</div><div class="shots"><img src="tutorial/c1_accesso.jpg" alt="Accesso allenatore"></div></div>
+
+<div class="step"><div>
+  <div class="n">2 · Allenamento del giorno</div>
+  <h3>Tabata e remoergometro</h3>
+  <p>Scegli il giorno in alto e apri <b>Area allenatore · esercizi</b>.</p>
+  <ul><li><b>Impostazione Tabata:</b> una per tutti, per esempio «5 × 45"/15"»</li>
+  <li><b>Remoergometro:</b> scrivi il tipo di lavoro, una riga per indicazione. Con <b>Prendi dalla libreria remo</b> inserisci un lavoro già salvato, con <b>Salva questo lavoro nella libreria remo</b> lo salvi per la prossima volta.</li></ul>
+</div><div class="shots"><img src="tutorial/c2_tabata_remo.jpg" alt="Tabata e remoergometro"></div></div>
+
+<div class="step"><div>
+  <div class="n">3 · Circuiti</div>
+  <h3>Esercizi scelti dalle immagini</h3>
+  <p>In ogni isola circuito tocca <b>Scegli dalle immagini</b>: tocchi le foto degli esercizi (quelli scelti diventano rossi), poi <b>Fatto</b>. Con ↑ cambi l'ordine, con ✕ togli.</p>
+  <ul><li><b>Riga scritta:</b> per un'indicazione libera</li><li><b>Note</b> e <b>Indicazioni per gruppo:</b> testo che vedono tutti, oppure solo G1, G2, G3 o G4</li></ul>
+</div><div class="shots"><img src="tutorial/c3_circuito.jpg" alt="Isola circuito"><img src="tutorial/c4_scegli.jpg" alt="Scelta esercizi dalle immagini"></div></div>
+
+<div class="step"><div>
+  <div class="n">4 · In aggiunta e salvataggio</div>
+  <h3>Allenamento in aggiunta, poi «Salva»</h3>
+  <p>In fondo c'è <b>Allenamento in aggiunta</b>, facoltativo: titolo, descrizione ed esercizi. Lasciato vuoto non compare.</p>
+  <p>Alla fine premi <b>Salva</b>: i ragazzi vedono subito il nuovo allenamento. Salvando, l'allenamento precedente di quel giorno viene sostituito.</p>
+</div><div class="shots"><img src="tutorial/c5_aggiunta.jpg" alt="Allenamento in aggiunta"></div></div>
+
+<div class="step"><div>
+  <div class="n">5 · Atleti</div>
+  <h3>Atleti e username</h3>
+  <p>Per ogni atleta: nome, <b>username</b>, anno, <b>PIN</b> (facoltativo) e <b>sedute</b> (6 o 4). Con 4 sedute martedì e giovedì per lui sono in grigio. <b>Aggiungi atleta</b> per uno nuovo, poi <b>Salva elenco</b>.</p>
+  <p class="note">L'elenco con username e PIN si scarica dal foglio Google, scheda «Atleti»: File → Scarica.</p>
+</div><div class="shots"><img src="tutorial/c7_atleti.jpg" alt="Atleti e username"></div></div>
+
+<div class="step"><div>
+  <div class="n">6 · Programma e test di un atleta</div>
+  <h3>📋 Programma e test</h3>
+  <p>Accanto a ogni atleta tocca <b>📋 Programma e test</b>. Si apre la sua scheda:</p>
+  <ul><li><b>Nuovo allenamento personale:</b> scegli il tipo (Remoergometro, Pesi o Circuito), scrivi titolo e descrizione e, per pesi e circuito, scegli gli esercizi dalle immagini. Lo vede solo lui.</li>
+  <li><b>Test:</b> i suoi risultati e la cronologia. Puoi aggiungere un test per lui o cancellarne uno sbagliato.</li></ul>
+</div><div class="shots"><img src="tutorial/c11_scheda_atleta.jpg" alt="Scheda atleta"><img src="tutorial/c12_nuovo_personale.jpg" alt="Nuovo allenamento personale"></div></div>
+
+<div class="step"><div>
+  <div class="n">7 · Test atleti</div>
+  <h3>Tabella dei test</h3>
+  <p>In <b>Test atleti</b> vedi il miglior tempo di ogni atleta per ogni test, con la data. Tutti i test finiscono anche nella scheda «Test» del foglio Google.</p>
+</div><div class="shots"><img src="tutorial/c13_test_atleti.jpg" alt="Test atleti"></div></div>
+
+<div class="step"><div>
+  <div class="n">8 · Presenze</div>
+  <h3>Registro presenze</h3>
+  <p>Scegli un giorno per vedere chi c'era, con gruppo e ora. Sotto c'è il riepilogo <b>progressivo</b> dall'inizio della preparazione: presenze su sedute previste e percentuale. Le sedute previste tengono conto delle 6 o 4 sedute di ciascuno.</p>
+  <p class="note">Ogni presenza finisce anche come riga nella scheda «Presenze» del foglio Google.</p>
+</div><div class="shots"><img src="tutorial/c8_registro.jpg" alt="Registro presenze"></div></div>
+
+<div class="step"><div>
+  <div class="n">9 · Altri allenamenti e PDF</div>
+  <h3>Libreria remo, altri allenamenti, schede PDF</h3>
+  <ul><li>Apri una sezione di <b>Altri allenamenti</b> e tocca <b>Nuovo allenamento</b>; per modificarlo o eliminarlo, <b>Modifica</b></li>
+  <li>In <b>Schede PDF</b> tocca <b>Carica schede PDF</b> per aggiungerne (anche più insieme). Con ✎ le rinomini, con ✕ le togli (tocca due volte).</li>
+  <li>In <b>Libreria · aggiungi esercizio</b> aggiungi esercizi nuovi alla libreria</li></ul>
+</div><div class="shots"><img src="tutorial/c9_nuovo_allenamento.jpg" alt="Nuovo allenamento"><img src="tutorial/c10_pdf_carica.jpg" alt="Schede PDF"></div></div>
+
+</div>
+<footer>Canottieri Montefeltro · Under 19 · App allenamenti</footer>
+</div>
+</body>
+</html>
