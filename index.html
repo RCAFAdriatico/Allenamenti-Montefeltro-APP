@@ -286,7 +286,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   const user = {
     canEdit: async () => { await load(); return who.coach; },
     isOwner: async () => { await load(); return who.coach; },
-    id: async () => { await load(); return who.user; },
+    id: async () => { await load(); return who.user || (who.coach ? (ls.get("mf_user")||null) : null); },
     profiles: async () => ({})
   };
   const toB64 = blob => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]||""); r.onerror = rej; r.readAsDataURL(blob); });
@@ -687,7 +687,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   }
 
   // ---------- Presenze ----------
-  let uid=null, user=null, myPres={}, allPres=[];
+  let idChk=false, reLog=false, uid=null, user=null, myPres={}, allPres=[];
   const pad=n=>String(n).padStart(2,"0");
   const dkey=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
   const today=()=>dkey(new Date());
@@ -737,11 +737,11 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   $("regDate").addEventListener("change",renderReg);
   $("regStart").addEventListener("change",async()=>{ const v=$("regStart").value; if(!v) return; regStart=v; renderReg(); try{ await db.doc("config/registro").set({inizio:v}); }catch(e){} });
   function renderWho(){
-    const W=$("whoBody"), r=meRec();
+    let W=$("whoBody"), r=meRec(); reLog=!!(r && idChk && db && !uid && !coach); if(reLog) r=null;
     if(r){ W.innerHTML=`<p class="ok"></p><p class="note"></p><div class="row"><button class="btn sec" id="whoChg">Cambia</button></div>`;
       W.querySelector(".ok").textContent=r.nome+" · "+r.username; W.querySelector(".note").textContent=seduteTxt(r);
       $("whoChg").onclick=()=>{ window.MF.logout(); location.reload(); }; return; }
-    W.innerHTML=`<div class="row"><input class="uinput" id="whoIn" autocomplete="username" autocapitalize="none" placeholder="Il tuo username"><input class="uinput" id="pinIn" inputmode="numeric" autocomplete="off" placeholder="PIN (se ce l'hai)" style="flex:0 1 120px"></div><div class="row" style="margin-top:8px"><button class="btn" id="whoOk">Entra</button></div><p class="note" id="whoMsg">Username e PIN te li dà l'allenatore.</p>`;
+    W.innerHTML=`<div class="row"><input class="uinput" id="whoIn" autocomplete="username" autocapitalize="none" placeholder="Il tuo username"><input class="uinput" id="pinIn" inputmode="numeric" autocomplete="off" placeholder="PIN (se ce l'hai)" style="flex:0 1 120px"></div><div class="row" style="margin-top:8px"><button class="btn" id="whoOk">Entra</button></div><p class="note" id="whoMsg">Username e PIN te li dà l'allenatore.</p>`; if(reLog){ $("whoIn").value=me; $("whoMsg").textContent="Rientra con username e PIN: l'accesso non è più valido (forse il PIN è stato aggiunto o cambiato)."; $("whoMsg").style.color="var(--red)"; }
     $("whoOk").onclick=()=>{ const v=$("whoIn").value.trim().toLowerCase(); if(!roster.length){ $("whoMsg").textContent="Elenco atleti non ancora caricato: riprova tra poco."; return; } if(!roster.some(x=>x.username===v)){ $("whoMsg").textContent="Username non trovato. Controlla con l'allenatore."; return; } $("whoMsg").textContent="Controllo…"; window.MF.login(v,$("pinIn").value.trim()).then(ok=>{ if(ok){ location.reload(); } else $("whoMsg").textContent= ok===null?"Connessione assente: riprova.":"Username o PIN non corretti."; }); };
   }
 
@@ -970,7 +970,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       else { b.textContent="Sono l'allenatore"; C.appendChild(b); b.onclick=()=>{ C.innerHTML=`<div class="row"><input class="uinput" id="cpw" type="password" placeholder="Password allenatore"><button class="btn" id="cok">Entra</button></div><p class="note" id="cmsg"></p>`;
         $("cok").onclick=async()=>{ const ok=await window.MF.coachLogin($("cpw").value); if(ok) location.reload(); else $("cmsg").textContent= ok===null?"Connessione assente.":"Password sbagliata."; }; }; } }
     subscribe();
-    uid = user ? await user.id() : null;
+    uid = user ? await user.id() : null; idChk=true; renderWho();
     if(db && uid){ db.doc("personali/"+uid).onSnapshot(sn=>{ myPers=(sn.exists&&sn.data().lista)||[]; renderMine(); },()=>{}); db.doc("test/"+uid).onSnapshot(sn=>{ myTests=(sn.exists&&sn.data().risultati)||[]; renderMine(); },()=>{}); }
     renderMine();
     if(db && coach){ $("testCoach").hidden=false;
