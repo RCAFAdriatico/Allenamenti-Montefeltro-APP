@@ -696,11 +696,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     const box=$("pres"); if(!db||!uid){ box.hidden=true; return; } box.hidden=false; const b=$("presBody");
     const t=myPres[today()];
     const tk={1:"lun",2:"mar",3:"mer",4:"gio",5:"ven",6:"sab"}[new Date().getDay()];
-    if(t){ const h=new Date(t.ora); const needG0=tk&&!DAYS[tk].pesi;
-      if(needG0 && !t.gruppo && group){ db.doc("presenze/"+uid).update({giorni:{[today()]:{gruppo:group}}}).catch(()=>{}); }
-      b.innerHTML=`<p class="ok"></p>`; b.querySelector("p").textContent="Presenza segnata alle "+pad(h.getHours())+":"+pad(h.getMinutes())+((t.gruppo||(needG0&&group))?" · gruppo G"+(t.gruppo||group):"");
-      if(needG0 && !t.gruppo && !group) b.insertAdjacentHTML("beforeend",`<p class="note">Ora scegli il tuo gruppo qui sopra.</p>`);
-      return; }
+    if(t){ const h=new Date(t.ora); b.innerHTML=`<p class="ok"></p>`; b.querySelector("p").textContent="Presenza segnata alle "+pad(h.getHours())+":"+pad(h.getMinutes()); return; }
     if(!me||!meRec()){ b.innerHTML=`<p class="note">Inserisci prima il tuo username qui sopra.</p>`; return; }
     if(!tk){ b.innerHTML=`<p class="note">Oggi è domenica: niente seduta.</p>`; return; }
     if(offFor(meRec(),tk)){ b.innerHTML=`<p class="note">Oggi per te è riposo: fai 4 sedute (lun, mer, ven, sab).</p>`; return; }
