@@ -200,7 +200,8 @@ dialog.pdfv{max-width:820px;width:calc(100% - 16px);max-height:96vh}
 .btn.sm{font-size:16px;padding:9px 10px;flex:1 1 0}
 .btn.sm:not(.sec){background:var(--ink);color:var(--bg)}
 .pickd{max-width:560px}
-.pickd .in{max-height:88vh}
+.pickd .in{max-height:88vh;overflow-y:auto}
+dialog .in .xclose{position:sticky;top:0;align-self:flex-end;margin-bottom:-44px;z-index:2;flex:0 0 40px;width:40px;height:40px;min-height:40px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:18px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .pickgrid{overflow:auto;max-height:52vh;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));margin-top:0}
 .libitem{position:relative}
 .libitem .ck{display:none;position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:var(--red);color:#fff;font-weight:700;align-items:center;justify-content:center}
@@ -331,7 +332,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   <nav class="guide"><a href="schede/Programma_Montefeltro_U19_2026-27.pdf" target="_blank" rel="noopener">📄 Programma di allenamento</a><a href="tutorial.html">❓ Come si usa l'app</a></nav>
   <section class="card" id="pres" hidden><div class="label">Presenza di oggi</div><div id="presBody"></div></section>
   <section class="card mine" id="mioProg" hidden><div class="label">Il tuo programma personale</div><div id="mioProgBody"></div></section>
-  <details class="libwrap" id="mieiTest" hidden><summary>I miei test</summary><div id="testBody"></div></details>
+  <details class="libwrap" id="mieiTest" hidden><summary>I miei test</summary><div id="testBody"></div><div class="row"><button type="button" class="btn sec dclose">Chiudi i test ▲</button></div></details>
   <figure class="card" id="pianta" style="margin:0"><div class="label">Pianta della palestra</div><div id="piantaSvg"></div><figcaption class="note" id="piantaCap"></figcaption></figure>
   <div class="tabata" id="tabata" hidden><span class="label">Tabata · uguale per tutti</span><b id="tabataTxt"></b></div>
   <div class="legend isl"><span class="tag remo">Remoergometro</span><span class="tag circ">Esercizi</span></div>
@@ -404,8 +405,10 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <summary>Test atleti</summary>
     <p class="note">Miglior tempo di ogni atleta per test (tra parentesi la data). Per aggiungere o correggere un test apri la scheda dell'atleta da «Atleti e username» → 📋.</p>
     <div id="testTab"></div>
+    <div class="row"><button type="button" class="btn sec dclose">Chiudi i test ▲</button></div>
   </details>
   <dialog class="exd pickd" id="persD"><div class="in">
+    <button type="button" class="xclose" id="persX" aria-label="Chiudi">✕</button>
     <span class="label">Scheda atleta</span><h2 id="persT"></h2>
     <div class="label" style="margin-top:4px">Programma personale</div>
     <p class="note">Lo vede solo questo atleta, dopo essere entrato con il suo username.</p>
@@ -918,7 +921,11 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   }
   $("altCatSel").onchange=()=>{ if(!altDraft) return; altDraft.cat=$("altCatSel").value; $("altExWrap").hidden=!altHasEx(altDraft.cat); };
   $("persAdd").onclick=()=>openAlt(null,persU);
-  $("persClose").onclick=()=>{ $("persD").close(); persU=null; };
+  $("persClose").onclick=()=>$("persD").close();
+  $("persX").onclick=()=>$("persD").close();
+  $("persD").addEventListener("close",()=>{ persU=null; });
+  $("persD").addEventListener("click",ev=>{ if(ev.target===$("persD")) $("persD").close(); });
+  document.querySelectorAll(".dclose").forEach(b=>b.onclick=()=>{ const d=b.closest("details"); d.open=false; d.scrollIntoView({block:"nearest",behavior:"smooth"}); });
   function renderAll(){ renderWho(); renderPickers(); renderList(); renderPres(); renderReg(); }
   let rosEd=[], rosDirty=false;
   function loadRosEd(){ rosEd=roster.map(r=>({nome:r.nome||"",username:r.username||"",anno:r.anno||"",pin:r.pin||"",sedute:seduteOn(r,today())})); rosDirty=false; }
