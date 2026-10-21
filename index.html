@@ -80,6 +80,8 @@ ol.seq li .d small{display:block;color:var(--muted);font-size:13px}
 ol.seq li.k-remo .d b{color:var(--remo)}
 ol.seq li.k-recupero .d b,ol.seq li.k-chiusura .d b{color:var(--muted);font-weight:500}
 ol.seq li.cur{background:var(--red-soft)}
+.pausa{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:10px 14px;border:1px dashed var(--muted);border-radius:14px;background:var(--bg);color:var(--muted);font-size:15px}
+.pausa b{color:var(--ink);font-weight:600}
 ol.seq li.past{opacity:.45}
 .exlist{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
 .exlist li{padding:8px 10px;border-radius:8px;background:var(--bg);font-size:15px}
@@ -428,13 +430,18 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   const $ = id => document.getElementById(id);
   const store = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} } };
   // Ordine delle isole per gruppo, dalle schede giornaliere
-  const C = (k,t,w) => ({k,t,w});
+  const C = (k,t,w,m) => ({k,t,w,m});
   const DAYS = {
-    lun:{nome:"Lunedì",corto:"Lun",sub:"Corsa 10', poi remo e circuiti · 5' di circuito e 5' di recupero dopo ogni pezzo",
+    lun:{nome:"Lunedì",corto:"Lun",sub:"Corsa 10', poi 5 pezzi al remo (5'-10'-10'-10'-5') · ogni blocco: remo → circuito 5' → recupero 5'",
       keys:[["R","Remoergometro"],["A","Circuito A (Isola 3)"],["B","Circuito B (Isola 4)"]],
-      order:g=>{ const r=(g%2)?[1,2,1,2,1]:[2,1,2,1,2], c=(g%2)?"ABABA":"BABAB", p=[5,10,10,10,5]; const o=[];
-        for(let i=0;i<5;i++){ const R=C("R","Remo "+p[i]+"'","Isola "+r[i]), K=C(c[i],"Circuito "+c[i],"Isola "+(c[i]==="A"?3:4));
-          if(g<=2){o.push(R); if(i<4)o.push(K);} else {o.push(K); o.push(R);} } return o; }},
+      order:g=>{ const r=(g%2)?[1,2,1,2,1]:[2,1,2,1,2], c=(g%2)?"ABABA":"BABAB", p=[5,10,10,10,5]; const o=[]; let t=10;
+        const add=(k,ti,w,d)=>{ o.push(C(k,ti,w,t+"–"+(t+d)+"'")); t+=d; };
+        const R=i=>{ add("R","Remo "+p[i]+"'","Isola "+r[i],p[i]); o[o.length-1].p=p[i]; };
+        const K=i=>add(c[i],"Circuito "+c[i],"Isola "+(c[i]==="A"?3:4)+" · 5'",5);
+        const P=()=>add("REC","Recupero 5'","Zona recupero",5);
+        for(let i=0;i<5;i++){ if(g<=2){ R(i); if(i<4){ K(i); P(); } } else { K(i); P(); R(i); } }
+        if(t<100) add("DEF","Defaticamento","",100-t);
+        return o; }},
     mar:{nome:"Martedì",corto:"Mar",pesi:true,sub:"Pesi con il personal trainer · altra palestra",keys:[["P","Pesi · indicazioni"]],order:g=>[C("P","Pesi con il personal trainer","Altra palestra")]},
     mer:{nome:"Mercoledì",corto:"Mer",sub:"Corsa 30', poi 2 giri di 4 isole · 1' di recupero tra le isole, 5' tra i giri",
       keys:[["1","Isola 1"],["2","Isola 2"],["3","Isola 3"],["4","Isola 4"]],
@@ -490,11 +497,18 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     if(offFor(meRec(),day)){ L.innerHTML=`<div class="card off"><h2>Oggi per te niente seduta</h2><p>Per ora fai 4 sedute: lunedì, mercoledì, venerdì e sabato.</p></div>`; return; }
     if(DAYS[day].pesi){ const v=norm(data["P"]); const card=document.createElement("article"); card.className="card pesi"; const h=document.createElement("h2"); h.textContent="Pesi con il personal trainer"; card.appendChild(h); const sb=document.createElement("div"); sb.className="sub"; sb.textContent="Altra palestra · il programma lo dà il personal trainer"; card.appendChild(sb); if(v.note){const n=document.createElement("p"); n.className="note"; n.textContent=v.note; card.appendChild(n);} const ex=(v.esercizi||[]).filter(Boolean); if(ex.length){ const ol=document.createElement("ol"); ol.className="exs"; ex.forEach(x=>ol.appendChild(exLi(x))); card.appendChild(ol);} L.appendChild(card); return; }
     if(!group){ L.innerHTML=`<div class="card"><h2>Scegli il tuo gruppo</h2><p class="note">Vedrai le isole nell'ordine del tuo gruppo, con gli esercizi e le impostazioni dell'app Tabata. Il telefono ricorda la scelta.</p></div>`; const xc=extraCard(); if(xc) L.appendChild(xc); return; }
-    DAYS[day].order(group).forEach((st,i)=>{
-      const v=norm(data[st.k]); const ex=forGroup((v.esercizi||[]).filter(Boolean),group);
+    let num=0;
+    DAYS[day].order(group).forEach(st=>{
+      if(st.k==="REC"||st.k==="DEF"){ const pc=document.createElement("div"); pc.className="pausa";
+        const b=document.createElement("b"); b.textContent=st.t; pc.appendChild(b);
+        const sm=document.createElement("span"); sm.textContent=[st.w,st.m?"min "+st.m:""].filter(Boolean).join(" · "); pc.appendChild(sm);
+        L.appendChild(pc); return; }
+      const i=num++;
+      const v=norm(data[st.k]); let ex=forGroup((v.esercizi||[]).filter(Boolean),group);
+      if(st.p){ const mine=ex.filter(x=>{ const m=/^\s*pezzo da\s*(\d+)\s*['’]/i.exec(x); return !m||+m[1]===st.p; }); ex=mine.map(x=>x.replace(/^\s*pezzo da\s*\d+\s*['’]\s*:\s*/i,"")); }
       const card=document.createElement("article"); const isR=st.k==="R"; card.className="card "+(isR?"remo":"circ"); const tg=document.createElement("span"); tg.className="tag "+(isR?"remo":"circ"); tg.textContent=isR?"Remoergometro":"Esercizi"; card.appendChild(tg);
       const h=document.createElement("h2"); h.textContent=(i+1)+". "+st.t; card.appendChild(h);
-      if(st.w){ const s=document.createElement("div"); s.className="sub"; s.textContent=st.w; card.appendChild(s); }
+      if(st.w||st.m){ const s=document.createElement("div"); s.className="sub"; s.textContent=[st.w,st.m?"min "+st.m:""].filter(Boolean).join(" · "); card.appendChild(s); }
       if(ex.length){ const ol=document.createElement("ol"); ol.className="exs"; ex.forEach(x=>{ if(isR){ const li=document.createElement("li"); li.textContent=x; ol.appendChild(li); } else ol.appendChild(exLi(x)); }); card.appendChild(ol); }
       const gn=groupNote(v.gruppi); if(gn) card.appendChild(gn);
       if(v.note){ const n=document.createElement("p"); n.className="note"; n.textContent=v.note; card.appendChild(n); }
