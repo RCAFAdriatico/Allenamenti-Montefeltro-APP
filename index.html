@@ -353,7 +353,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <div id="pdfPages" class="pdfpages"></div></div></dialog>
   <dialog class="exd pickd" id="altD"><div class="in">
     <span class="label" id="altDCat"></span><h2 id="altDTit">Nuovo allenamento</h2>
-    <div class="field" id="altCatF" hidden><label for="altCatSel">Tipo</label><select class="pl" id="altCatSel"><option value="remo">Remoergometro</option><option value="pesi">Pesi</option><option value="circuito">Circuito</option></select></div>
+    <div class="field" id="altCatF" hidden><label for="altCatSel">Tipo</label><select class="pl" id="altCatSel"><option value="remo">Remoergometro</option><option value="pesi">Pesi</option><option value="circuito">Circuito</option><option value="bike">Bike</option><option value="corsa">Corsa</option></select></div>
     <div class="field"><label for="altTit">Titolo</label><input class="pl" id="altTit" placeholder="es. Piramide 1-2-3-4-3-2-1"></div>
     <div class="field"><label for="altTxt">Descrizione e tempi</label><textarea id="altTxt" placeholder="es. 3 giri · 45&quot;/15&quot; · 2' tra i giri"></textarea></div>
     <div id="altExWrap"><div class="label" style="margin-top:6px">Esercizi</div><div class="edlist" id="altEx"></div>
@@ -746,7 +746,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   }
 
   // ---------- Altri allenamenti (fuori dalla struttura settimanale) ----------
-  const ALTCATS=[["remo","Remoergometro"],["bike","Bike"],["pesi","Pesi"],["circuito","Circuito"]];
+  const PCATN={remo:"Remoergometro",pesi:"Pesi",circuito:"Circuito",bike:"Bike",corsa:"Corsa"}, PEND=c=>c==="remo"||c==="bike"||c==="corsa";
+  const ALTCATS=[["remo","Remoergometro"],["bike","Bike"],["corsa","Corsa"],["pesi","Pesi"],["circuito","Circuito"]];
   let alt=[], altCat=null, altDraft=null;
   const altHasEx=c=>c==="pesi"||c==="circuito";
   function renderAlt(){
@@ -757,7 +758,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     const items=alt.filter(a=>a.cat===altCat).sort((a,b)=>(b.creato||0)-(a.creato||0));
     if(coach){ const b=document.createElement("button"); b.type="button"; b.className="btn sm"; b.textContent="＋ Nuovo allenamento "+ALTCATS.find(x=>x[0]===altCat)[1].toLowerCase(); b.onclick=()=>openAlt(null); L.appendChild(b); }
     if(!items.length){ const p=document.createElement("p"); p.className="note"; p.textContent="Ancora nessun allenamento in questa sezione."; L.appendChild(p); return; }
-    items.forEach(a=>{ const c=document.createElement("article"); c.className="altcard"+(a.cat==="remo"?" remo":"");
+    items.forEach(a=>{ const c=document.createElement("article"); c.className="altcard"+(PEND(a.cat)?" remo":"");
       const h=document.createElement("h3"); h.textContent=a.titolo||"Senza titolo"; c.appendChild(h);
       if(a.testo){ const t=document.createElement("div"); t.className="txt"; t.textContent=a.testo; c.appendChild(t); }
       const ex=(a.esercizi||[]).filter(Boolean); if(ex.length){ const ol=document.createElement("ol"); ol.className="exs"; ex.forEach(x=>ol.appendChild(exLi(x))); c.appendChild(ol); }
@@ -884,8 +885,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     const P=$("mioProg"), T=$("mieiTest");
     P.hidden=!(uid && myPers.length); T.hidden=!uid;
     if(uid && myPers.length){ const B=$("mioProgBody"); B.innerHTML="";
-      myPers.slice().sort((a,b)=>(b.creato||0)-(a.creato||0)).forEach(a=>{ const c=document.createElement("article"); c.className="altcard"+(a.cat==="remo"?" remo":"");
-        const tg=document.createElement("span"); tg.className="tag "+(a.cat==="remo"?"remo":"circ"); tg.textContent=a.cat==="remo"?"Remoergometro":a.cat==="pesi"?"Pesi":"Circuito"; c.appendChild(tg);
+      myPers.slice().sort((a,b)=>(b.creato||0)-(a.creato||0)).forEach(a=>{ const c=document.createElement("article"); c.className="altcard"+(PEND(a.cat)?" remo":"");
+        const tg=document.createElement("span"); tg.className="tag "+(PEND(a.cat)?"remo":"circ"); tg.textContent=PCATN[a.cat]||"Circuito"; c.appendChild(tg);
         const h=document.createElement("h3"); h.textContent=a.titolo||"Allenamento"; c.appendChild(h);
         if(a.data){ const d=document.createElement("div"); d.className="note"; d.textContent=a.data; c.appendChild(d); }
         if(a.testo){ const t=document.createElement("div"); t.className="txt"; t.textContent=a.testo; c.appendChild(t); }
@@ -911,7 +912,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   function renderPers(){ if(!persU) return; const u=persU, L=$("persList"); L.innerHTML="";
     const list=(allPers[u]||[]).slice().sort((a,b)=>(b.creato||0)-(a.creato||0));
     if(!list.length) L.innerHTML=`<p class="note">Nessun allenamento personale.</p>`;
-    list.forEach(a=>{ const c=document.createElement("article"); c.className="altcard"+(a.cat==="remo"?" remo":""); const tg=document.createElement("span"); tg.className="tag "+(a.cat==="remo"?"remo":"circ"); tg.textContent=a.cat==="remo"?"Remoergometro":a.cat==="pesi"?"Pesi":"Circuito"; c.appendChild(tg); const h=document.createElement("h3"); h.textContent=a.titolo||"Allenamento"; c.appendChild(h);
+    list.forEach(a=>{ const c=document.createElement("article"); c.className="altcard"+(PEND(a.cat)?" remo":""); const tg=document.createElement("span"); tg.className="tag "+(PEND(a.cat)?"remo":"circ"); tg.textContent=PCATN[a.cat]||"Circuito"; c.appendChild(tg); const h=document.createElement("h3"); h.textContent=a.titolo||"Allenamento"; c.appendChild(h);
       if(a.testo){ const t=document.createElement("div"); t.className="txt"; t.textContent=a.testo; c.appendChild(t); }
       const n=(a.esercizi||[]).length; if(n){ const s=document.createElement("div"); s.className="note"; s.textContent=n+(n===1?" esercizio":" esercizi"); c.appendChild(s); }
       const r=document.createElement("div"); r.className="row"; const e=document.createElement("button"); e.type="button"; e.className="btn sec sm"; e.textContent="Modifica"; e.onclick=()=>openAlt(a,u); r.appendChild(e); c.appendChild(r); L.appendChild(c); });
