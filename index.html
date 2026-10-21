@@ -695,15 +695,18 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   function renderPres(){
     const box=$("pres"); if(!db||!uid){ box.hidden=true; return; } box.hidden=false; const b=$("presBody");
     const t=myPres[today()];
-    if(t){ const h=new Date(t.ora); b.innerHTML=`<p class="ok"></p>`; b.querySelector("p").textContent="Presenza segnata alle "+pad(h.getHours())+":"+pad(h.getMinutes())+(t.gruppo?" · gruppo G"+t.gruppo:""); return; }
     const tk={1:"lun",2:"mar",3:"mer",4:"gio",5:"ven",6:"sab"}[new Date().getDay()];
+    if(t){ const h=new Date(t.ora); const needG0=tk&&!DAYS[tk].pesi;
+      if(needG0 && !t.gruppo && group){ db.doc("presenze/"+uid).update({giorni:{[today()]:{gruppo:group}}}).catch(()=>{}); }
+      b.innerHTML=`<p class="ok"></p>`; b.querySelector("p").textContent="Presenza segnata alle "+pad(h.getHours())+":"+pad(h.getMinutes())+((t.gruppo||(needG0&&group))?" · gruppo G"+(t.gruppo||group):"");
+      if(needG0 && !t.gruppo && !group) b.insertAdjacentHTML("beforeend",`<p class="note">Ora scegli il tuo gruppo qui sopra.</p>`);
+      return; }
     if(!me||!meRec()){ b.innerHTML=`<p class="note">Inserisci prima il tuo username qui sopra.</p>`; return; }
     if(!tk){ b.innerHTML=`<p class="note">Oggi è domenica: niente seduta.</p>`; return; }
     if(offFor(meRec(),tk)){ b.innerHTML=`<p class="note">Oggi per te è riposo: fai 4 sedute (lun, mer, ven, sab).</p>`; return; }
     const needG=!DAYS[tk].pesi;
-    b.innerHTML=`<div class="row"><button class="btn" id="presBtn">Sono presente</button></div>${(group||!needG)?"":`<p class="note">Scegli prima il tuo gruppo.</p>`}`;
-    $("presBtn").disabled=needG&&!group;
-    $("presBtn").onclick=async()=>{ const ref=db.doc("presenze/"+uid); const rec={gruppo:needG?group:0,ora:Date.now()};
+    b.innerHTML=`<div class="row"><button class="btn" id="presBtn">Sono presente</button></div>`;
+    $("presBtn").onclick=async()=>{ const ref=db.doc("presenze/"+uid); const rec={gruppo:needG?(group||0):0,ora:Date.now()};
       try{ const sn=await ref.get(); if(sn.exists) await ref.update({atleta:me,giorni:{[today()]:rec}}); else await ref.set({atleta:me,giorni:{[today()]:rec}}); }
       catch(e){ b.insertAdjacentHTML("beforeend",`<p class="note">Presenza non registrata: chiedi all'allenatore di darti accesso come Contributor.</p>`); } };
   }
@@ -719,7 +722,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     const D=$("regDay"); D.innerHTML="";
     if(!pres.length){ D.innerHTML=`<p class="note">Nessuna presenza segnata in questo giorno.</p>`; }
     else { const t=document.createElement("table"); t.className="tbl"; t.innerHTML=`<thead><tr><th>Atleta</th><th>Gruppo</th><th>Ora</th></tr></thead><tbody></tbody>`;
-      pres.forEach(p=>{ const r=p.giorni[dk], h=new Date(r.ora); const tr=document.createElement("tr"); [name(p.id),(r.gruppo?"G"+r.gruppo:"Pesi"),pad(h.getHours())+":"+pad(h.getMinutes())].forEach(v=>{const td=document.createElement("td"); td.textContent=v; tr.appendChild(td);}); t.tBodies[0].appendChild(tr); });
+      pres.forEach(p=>{ const r=p.giorni[dk], h=new Date(r.ora); const tr=document.createElement("tr"); [name(p.id),(r.gruppo?"G"+r.gruppo:([2,4].includes(new Date(dk+"T12:00:00").getDay())?"Pesi":"—")),pad(h.getHours())+":"+pad(h.getMinutes())].forEach(v=>{const td=document.createElement("td"); td.textContent=v; tr.appendChild(td);}); t.tBodies[0].appendChild(tr); });
       D.appendChild(t); const tot=document.createElement("p"); tot.className="note"; tot.textContent=pres.length+" presenti"; D.appendChild(tot); }
     const T=today(), st=regStart; $("regStart").value=st;
     const people=new Map();
