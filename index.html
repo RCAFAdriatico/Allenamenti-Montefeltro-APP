@@ -80,7 +80,7 @@ ol.seq li .d small{display:block;color:var(--muted);font-size:13px}
 ol.seq li.k-remo .d b{color:var(--remo)}
 ol.seq li.k-recupero .d b,ol.seq li.k-chiusura .d b{color:var(--muted);font-weight:500}
 ol.seq li.cur{background:var(--red-soft)}
-.fmtbox{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}.fmtchk{display:flex;align-items:center;gap:8px;margin-top:8px;font-weight:500;text-transform:none;letter-spacing:0}.fmtbox select{width:100%;min-width:0;max-width:100%}.fmtg{display:grid;grid-template-columns:40px minmax(0,1fr);align-items:center;gap:8px;margin-top:6px}
+.fmtbox{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}.fmtchk{display:flex;align-items:center;gap:8px;margin-top:8px;font-weight:500;text-transform:none;letter-spacing:0}.fmtbox select{width:100%;min-width:0;max-width:100%}.fmtg{display:grid;grid-template-columns:60px minmax(0,1fr);align-items:center;gap:8px;margin-top:6px}
 .pausa{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:10px 14px;border:1px dashed var(--muted);border-radius:14px;background:var(--bg);color:var(--muted);font-size:15px}
 .pausa b{color:var(--ink);font-weight:600}
 ol.seq li.past{opacity:.45}
@@ -376,7 +376,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <summary>Area allenatore · esercizi e impostazioni</summary>
     <p class="note">Scrivi l'impostazione Tabata del giorno (una per tutti) e per ogni isola scegli gli esercizi toccando le immagini. Con «Riga scritta» aggiungi un'indicazione libera. Poi premi Salva.</p>
     <div class="field fmtbox" id="fmtField" hidden><label for="fmtSel">Formato dell'allenamento di questo giorno</label><select id="fmtSel" class="pl"></select>
-      <label class="fmtchk"><input type="checkbox" id="fmtPer"> Differenzia per gruppo</label>
+      <label class="fmtchk"><input type="checkbox" id="fmtPer"> Differenzia per età</label>
       <div id="fmtGr" hidden></div><p class="note" id="fmtNote"></p></div>
     <div class="field" id="tabField"><label for="tabIn">Impostazione Tabata (per tutti)</label><input id="tabIn" class="pl" placeholder="es. 30&quot;/10&quot; × 6 · 2 giri"></div>
     <div id="editor"></div>
@@ -502,14 +502,17 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       def:{S2:{esercizi:["Back squat · 4 × 12","Stacchi con quadbar · 4 × 12","Sottopanca · 4 × 12","Spinte su panca piana con bilanciere · 4 × 12","Pulley · 3 × 12","Affondi alternati con manubri · 3 × 20"],note:"Autoregolazione del carico: avvicinarsi al cedimento senza perdere la tecnica."}}}
   };
   const FDAYS=["lun","mer","ven"];
-  const fmtOf=(d,g)=>{ const v=fmtAct[d]; const id=(v&&typeof v==="object")?(v["G"+g]||v.tutti):v; return (FORMATS[id]&&id!==d)?id:d; };
+  const fmtEta=d=>{ const v=fmtAct[d]; return (v&&typeof v==="object"&&v.eta&&v.eta.dal&&v.eta.giovani)?v.eta:null; };
+  const isYoung=d=>{ const e=fmtEta(d), r=meRec(); return !!(e && r && +r.anno>=+e.dal); };
+  const fmtIds=d=>{ const v=fmtAct[d]; const t=(v&&typeof v==="object")?v.tutti:v; const e=fmtEta(d); return [t||d].concat(e?[e.giovani]:[]).map(id=>(FORMATS[id]&&id!==d)?id:d); };
+  const fmtOf=(d,g)=>{ const ids=fmtIds(d); return (isYoung(d)&&ids[1])?ids[1]:ids[0]; };
   const remoKey=(id,d)=>"R_"+id; // remo dei formati di un altro giorno: chiave propria
   function fdef(id,d){ const f=FORMATS[id]; if(!f||id===d) return BASE[d];
     if(f.base){ const b=BASE[f.base]; const rk=remoKey(f.base,d); const keys=b.keys.map(([k,l])=>k==="R"?[rk,l+" · "+f.nome]:[k,l]);
       return Object.assign({},BASE[d],{sub:b.sub,order:g=>b.order(g).map(st=>st.k==="R"?Object.assign({},st,{k:rk}):st),keys,pianta:f.base,cap:CAP[f.base],fmt:id}); }
     return Object.assign({},BASE[d],{sub:f.sub,order:f.order,keys:f.keys,pianta:f.pianta||null,cap:f.cap,fmt:id}); }
   const dayDef=(d,g)=>fdef(fmtOf(d,g),d);
-  function edKeysFor(d){ if(BASE[d].pesi) return BASE[d].keys; const seen=new Set(), out=[]; [1,2,3,4].forEach(g=>dayDef(d,g).keys.forEach(kl=>{ if(!seen.has(kl[0])){ seen.add(kl[0]); out.push(kl); } })); return out; }
+  function edKeysFor(d){ if(BASE[d].pesi) return BASE[d].keys; const seen=new Set(), out=[]; fmtIds(d).forEach(id=>fdef(id,d).keys.forEach(kl=>{ if(!seen.has(kl[0])){ seen.add(kl[0]); out.push(kl); } })); return out; }
   let fmtAct={};
   const wd=new Date().getDay();
   let day=store.get("mf_day")||({1:"lun",2:"mar",3:"mer",4:"gio",5:"ven",6:"sab"}[wd]||"lun");
@@ -536,7 +539,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   function renderPickers(){
     const R=meRec(); $("days").innerHTML=Object.entries(DAYS).map(([k,d])=>`<button type="button" data-d="${k}" class="${offFor(R,k)?"off":""}" aria-pressed="${k===day}" ${offFor(R,k)?'title="Questa seduta non è nel tuo programma"':""}>${d.corto}</button>`).join("");
     $("groups").innerHTML=[1,2,3,4].map(g=>`<button type="button" class="chip" data-g="${g}" aria-pressed="${g===group}">G${g}</button>`).join("");
-    const DD=dayDef(day,group||1); $("dayTitle").textContent=DAYS[day].nome; $("daySub").textContent=(DD.fmt?"["+FORMATS[DD.fmt].tag+"] "+FORMATS[DD.fmt].nome+" · ":"")+DD.sub; const P=!DAYS[day].pesi; document.querySelectorAll("#pianta,.isl").forEach(e=>e.style.display=P?"":"none"); $("groups").style.display=P?"":"none"; if($("groups").previousElementSibling) $("groups").previousElementSibling.style.display=P?"":"none"; const pk=DD.pianta===null?null:(DD.pianta||day); $("piantaSvg").innerHTML=pk?(PIANTE[pk]||""):""; $("pianta").hidden=!pk; $("piantaCap").textContent=DD.cap||CAP[day]||""; renderFmt();
+    const DD=dayDef(day,group||1); $("dayTitle").textContent=DAYS[day].nome; $("daySub").textContent=(DD.fmt?"["+FORMATS[DD.fmt].tag+"] "+FORMATS[DD.fmt].nome+" · ":"")+DD.sub; { const e=fmtEta(day), ids=fmtIds(day); if(e&&ids[1]){ const y=FORMATS[ids[1]]; $("daySub").textContent+=(isYoung(day)||!coach)?"":" · Nati dal "+e.dal+": ["+y.tag+"] "+(ids[1]===day?"Standard di oggi":y.nome); if(isYoung(day)) $("daySub").textContent="Per i nati dal "+e.dal+" · "+$("daySub").textContent; } } const P=!DAYS[day].pesi; document.querySelectorAll("#pianta,.isl").forEach(e=>e.style.display=P?"":"none"); $("groups").style.display=P?"":"none"; if($("groups").previousElementSibling) $("groups").previousElementSibling.style.display=P?"":"none"; const pk=DD.pianta===null?null:(DD.pianta||day); $("piantaSvg").innerHTML=pk?(PIANTE[pk]||""):""; $("pianta").hidden=!pk; $("piantaCap").textContent=DD.cap||CAP[day]||""; renderFmt();
   }
   function extraCard(){ if(!extra) return null; const c=document.createElement("article"); c.className="card extra";
     const tg=document.createElement("span"); tg.className="tag extra"; tg.textContent="In aggiunta"; c.appendChild(tg);
@@ -551,9 +554,10 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     $("tabata").hidden=!tabata||!!DAYS[day].pesi||offFor(meRec(),day); $("tabataTxt").textContent=tabata;
     if(offFor(meRec(),day)){ L.innerHTML=`<div class="card off"><h2>Oggi per te niente seduta</h2><p>Per ora fai 4 sedute: lunedì, mercoledì, venerdì e sabato.</p></div>`; return; }
     if(DAYS[day].pesi){ const v=norm(data["P"]); const card=document.createElement("article"); card.className="card pesi"; const h=document.createElement("h2"); h.textContent="Pesi con il personal trainer"; card.appendChild(h); const sb=document.createElement("div"); sb.className="sub"; sb.textContent="Altra palestra · il programma lo dà il personal trainer"; card.appendChild(sb); if(v.note){const n=document.createElement("p"); n.className="note"; n.textContent=v.note; card.appendChild(n);} const ex=(v.esercizi||[]).filter(Boolean); if(ex.length){ const ol=document.createElement("ol"); ol.className="exs"; ex.forEach(x=>ol.appendChild(exLi(x))); card.appendChild(ol);} L.appendChild(card); return; }
-    if(!group){ L.innerHTML=`<div class="card"><h2>Scegli il tuo gruppo</h2><p class="note">Vedrai le isole nell'ordine del tuo gruppo, con gli esercizi e le impostazioni dell'app Tabata. Il telefono ricorda la scelta.</p></div>`; const xc=extraCard(); if(xc) L.appendChild(xc); return; }
+    const noG=(FORMATS[fmtOf(day,1)]||{}).tag==="Pesi" && fmtOf(day,1)!==day;
+    if(!group && !noG){ L.innerHTML=`<div class="card"><h2>Scegli il tuo gruppo</h2><p class="note">Vedrai le isole nell'ordine del tuo gruppo, con gli esercizi e le impostazioni dell'app Tabata. Il telefono ricorda la scelta.</p></div>`; const xc=isYoung(day)?null:extraCard(); if(xc) L.appendChild(xc); return; }
     let num=0;
-    dayDef(day,group).order(group).forEach(st=>{
+    dayDef(day,group||1).order(group||1).forEach(st=>{
       if(st.k==="REC"||st.k==="DEF"){ const pc=document.createElement("div"); pc.className="pausa";
         const b=document.createElement("b"); b.textContent=st.t; pc.appendChild(b);
         const sm=document.createElement("span"); sm.textContent=[st.w,st.m?"min "+st.m:""].filter(Boolean).join(" · "); pc.appendChild(sm);
@@ -570,7 +574,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       if(!ex.length && !v.note && !gn){ const n=document.createElement("p"); n.className="note"; n.textContent=isR?"Indicazioni per il remo non ancora inserite.":"L'allenatore non ha ancora inserito gli esercizi per questa isola."; card.appendChild(n); }
       L.appendChild(card);
     });
-    const xc=extraCard(); if(xc) L.appendChild(xc);
+    const xc=isYoung(day)?null:extraCard(); if(xc) L.appendChild(xc);
   }
 
   // ---------- Libreria esercizi ----------
@@ -737,17 +741,20 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     return (withSame?`<option value="">come tutti</option>`:"")+tags.map(t=>`<optgroup label="${t}">`+Object.entries(FORMATS).filter(([k,f])=>f.tag===t).map(([k,f])=>`<option value="${k}"${k===sel?" selected":""}>[${t}] ${k===day?"Standard di oggi · ":""}${f.nome}</option>`).join("")+`</optgroup>`).join(""); }
   function renderFmt(){
     const F=$("fmtField"); if(!F) return; F.hidden=!coach||!FDAYS.includes(day); if(F.hidden) return;
-    const v=fmtAct[day], obj=(v&&typeof v==="object"); const tutti=(obj?v.tutti:v)||day;
-    $("fmtSel").innerHTML=fmtOptions(FORMATS[tutti]?tutti:day,false); $("fmtPer").checked=!!obj && [1,2,3,4].some(g=>v["G"+g]);
-    const G=$("fmtGr"); G.hidden=!$("fmtPer").checked; G.innerHTML=[1,2,3,4].map(g=>`<div class="fmtg"><b>G${g}</b><select class="pl" data-g="${g}">${fmtOptions(obj?(v["G"+g]||""):"",true)}</select></div>`).join("");
-    $("fmtNote").textContent="Scegli dal repository un formato al posto di quello fisso, per tutti o per singoli gruppi. Con gruppi su formati diversi controlla che non si trovino sulle stesse isole nello stesso momento.";
+    const v=fmtAct[day], obj=(v&&typeof v==="object"); const tutti=(obj?v.tutti:v)||day; const e=fmtEta(day);
+    $("fmtSel").innerHTML=fmtOptions(FORMATS[tutti]?tutti:day,false); $("fmtPer").checked=!!e || (obj&&!!v.etaOn);
+    const G=$("fmtGr"); G.hidden=!$("fmtPer").checked; const dal=(e&&e.dal)||(obj&&v.eta&&v.eta.dal)||2011;
+    const anni=[2006,2007,2008,2009,2010,2011,2012,2013,2014];
+    G.innerHTML=`<div class="fmtg"><b>Dal</b><select class="pl" id="fmtDal">${anni.map(a=>`<option value="${a}"${a==dal?" selected":""}>nati dal ${a} in poi</option>`).join("")}</select></div>
+      <div class="fmtg"><b>Fanno</b><select class="pl" id="fmtYoung">${fmtOptions((e&&e.giovani)||"",true).replace("come tutti","scegli il formato…")}</select></div>
+      <p class="note" style="margin:6px 0 0">Gli altri fanno il formato scelto sopra. L'età la prende dall'anno nell'elenco atleti.</p>`;
+    $("fmtNote").textContent="Scegli dal repository un formato al posto di quello fisso, per tutti o diverso per età. Se due formati usano le stesse isole nello stesso momento, controlla gli spazi.";
   }
-  async function saveFmt(){ const d=day, per=$("fmtPer").checked, tutti=$("fmtSel").value; let val=tutti;
-    if(per){ val={tutti}; $("fmtGr").querySelectorAll("select").forEach(x=>{ val["G"+x.dataset.g]=x.value||""; }); }
+  async function saveFmt(){ const d=day, tutti=$("fmtSel").value; let val=tutti;
+    if($("fmtPer").checked){ const dal=$("fmtDal")?+$("fmtDal").value:2011, gio=$("fmtYoung")?$("fmtYoung").value:""; val={tutti,etaOn:true,eta:{dal,giovani:gio||""}}; }
     fmtAct[d]=val; renderPickers(); renderList(); edDirty=false; renderEditor();
     try{ await db.doc("config/formati").update({[d]:val});
-      // contenuti predefiniti per le isole dei formati attivati, solo se vuote
-      const ids=new Set([1,2,3,4].map(g=>fmtOf(d,g))); const add={};
+      const ids=new Set(fmtIds(d)); const add={};
       const empty=k=>{ const x=norm(data[k]); return !(x.esercizi||[]).filter(Boolean).length && !x.note; };
       for(const id of ids){ if(id===d) continue; const f=FORMATS[id];
         if(f.def) Object.entries(f.def).forEach(([k,c])=>{ if(empty(k)) add[k]={esercizi:c.esercizi,note:c.note||"",gruppi:{}}; });
@@ -757,7 +764,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       $("fmtNote").textContent="Formato salvato: i ragazzi lo vedono subito."; }
     catch(e){ $("fmtNote").textContent="Non salvato: controlla la connessione."; } }
   $("fmtSel").addEventListener("change",saveFmt);
-  $("fmtPer").addEventListener("change",()=>{ $("fmtGr").hidden=!$("fmtPer").checked; if(!$("fmtPer").checked) saveFmt(); });
+  $("fmtPer").addEventListener("change",()=>{ $("fmtGr").hidden=!$("fmtPer").checked; saveFmt(); });
   $("fmtGr").addEventListener("change",saveFmt);
   function subscribe(){
     if(unsub){unsub();unsub=null;} data={}; tabata=""; extra=null; if(!db) return;
