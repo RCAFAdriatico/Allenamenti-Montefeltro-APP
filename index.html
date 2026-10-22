@@ -190,7 +190,7 @@ dialog.pdfv{max-width:820px;width:calc(100% - 16px);max-height:96vh}
 .rosrow{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;background:var(--bg);border-radius:10px;padding:8px}
 .rosrow input,.rosrow select{font:inherit;font-size:15px;border:1.5px solid var(--line);border-radius:8px;padding:7px;background:var(--surface);color:var(--ink);min-width:0;width:100%;box-sizing:border-box}
 .rosrow{grid-template-columns:1fr 1fr 40px}
-.guide{display:grid;grid-template-columns:1fr 1fr;gap:8px}.guide a{display:flex;align-items:center;justify-content:center;text-align:center;min-height:48px;padding:8px 10px;border-radius:12px;background:var(--surface);border:1px solid var(--line);color:var(--ink);font-weight:600;text-decoration:none;font-size:15px;line-height:1.2}
+.guide{display:grid;grid-template-columns:1fr 1fr;gap:8px}.guide a.man{grid-column:1/-1;border-color:var(--remo);color:var(--remo)}.guide a[hidden]{display:none}.guide a{display:flex;align-items:center;justify-content:center;text-align:center;min-height:48px;padding:8px 10px;border-radius:12px;background:var(--surface);border:1px solid var(--line);color:var(--ink);font-weight:600;text-decoration:none;font-size:15px;line-height:1.2}
 .rosrow>:nth-child(1){grid-column:1/3;grid-row:1}
 .rosrow>:nth-child(2){grid-column:3;grid-row:1}
 .rosrow>:nth-child(3){grid-column:1;grid-row:2}
@@ -330,7 +330,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   <div><div class="label" style="margin-bottom:6px">Giorno</div><div class="seg seg6" id="days" role="group" aria-label="Giorno"></div></div>
   <div><div class="label" style="margin-bottom:6px">Il tuo gruppo</div><div class="seg" id="groups" role="group" aria-label="Gruppo"></div></div>
   <section class="card" id="who"><div class="label">Chi sei</div><div id="whoBody"><p class="note">Caricamento…</p></div></section>
-  <nav class="guide"><a href="schede/Programma_Montefeltro_U19_2026-27.pdf" target="_blank" rel="noopener">📄 Programma di allenamento</a><a href="tutorial.html">❓ Come si usa l'app</a></nav>
+  <nav class="guide"><a href="schede/Programma_Montefeltro_U19_2026-27.pdf" target="_blank" rel="noopener">📄 Programma di allenamento</a><a href="tutorial.html">❓ Come si usa l'app</a><a href="manuale-allenatore.html" class="man" id="manLink" hidden>📘 Manuale dell'allenatore</a></nav>
   <section class="card" id="pres" hidden><div class="label">Presenza di oggi</div><div id="presBody"></div></section>
   <section class="card mine" id="mioProg" hidden><div class="label">Il tuo programma personale</div><div id="mioProgBody"></div></section>
   <details class="libwrap" id="mieiTest" hidden><summary>I miei test</summary><div id="testBody"></div><div class="row"><button type="button" class="btn sec dclose">Chiudi i test ▲</button></div></details>
@@ -1035,7 +1035,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   (async()=>{
     if(!window.claude?.use) return;
     db=await window.claude.use("db"); if(!db){ $("list").insertAdjacentHTML("afterbegin",`<div class="card"><p class="err" style="color:var(--red);font-weight:600">Connessione assente: controlla la rete e ricarica.</p></div>`); return; } user=await window.claude.use("user");
-    coach=!!(user && await user.canEdit()); if(coach&&db){ $("coach").hidden=false; $("reg").hidden=false; $("ros").hidden=false; $("libEd").hidden=false; $("regDate").value=today(); }
+    coach=!!(user && await user.canEdit()); if(coach&&db){ $("coach").hidden=false; $("manLink").hidden=false; $("reg").hidden=false; $("ros").hidden=false; $("libEd").hidden=false; $("regDate").value=today(); }
     try{ assets=await window.claude.use("assets"); }catch(e){ assets=null; }
     try{ downloads=await window.claude.use("downloads"); }catch(e){ downloads=null; }
     if(db){ db.collection("pdf").onSnapshot(qs=>{ pdfs=qs.docs.map(x=>({id:x.id,...(x.data()||{})})).filter(p=>p.asset); renderAlt(); },()=>{}); }

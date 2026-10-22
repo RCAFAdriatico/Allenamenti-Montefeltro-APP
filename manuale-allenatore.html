@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Manuale allenatore · Montefeltro</title>
+<meta name="theme-color" content="#d9161c">
+<link rel="icon" href="icona.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#f6f4f3;--surface:#fff;--ink:#1b1716;--muted:#6c6461;--line:#e4dedb;--red:#d9161c;--red-soft:#fbe3e2;--remo:#1f5fa8;--remo-soft:#e3edf8;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#141111;--surface:#1e1a19;--ink:#f3eeec;--muted:#a59c99;--line:#332c2a;--red:#ff4a4f;--red-soft:#3a1a1b;--remo:#6ea6ea;--remo-soft:#18263a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141111;--surface:#1e1a19;--ink:#f3eeec;--muted:#a59c99;--line:#332c2a;--red:#ff4a4f;--red-soft:#3a1a1b;--remo:#6ea6ea;--remo-soft:#18263a;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:var(--body);font-size:17px;line-height:1.5;padding:16px max(16px,env(safe-area-inset-left)) 48px}
+.wrap{max-width:720px;margin:0 auto}
+header{display:flex;align-items:center;gap:14px;margin:4px 0 18px}
+header img{width:84px;height:auto}
+.eyebrow{font-family:var(--display);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:14px;color:var(--red)}
+h1{font-family:var(--display);font-weight:700;font-size:34px;line-height:1;margin:2px 0 0}
+h2{font-family:var(--display);font-weight:700;font-size:28px;margin:34px 0 6px;padding-bottom:6px;border-bottom:3px solid var(--red)}
+h3{font-family:var(--display);font-weight:700;font-size:22px;margin:0 0 4px}
+p{margin:6px 0}
+a{color:var(--red)}
+.toc{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
+.toc a{font-family:var(--display);font-weight:700;font-size:18px;text-decoration:none;border:2px solid var(--ink);color:var(--ink);border-radius:999px;padding:6px 14px}
+.toc a.coachlink{border-color:var(--remo);color:var(--remo)}
+.open{display:inline-block;margin-top:12px;font-family:var(--display);font-weight:700;font-size:20px;background:var(--red);color:#fff;text-decoration:none;border-radius:12px;padding:10px 18px}
+.step{display:grid;grid-template-columns:1fr;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0}
+.step .n{font-family:var(--display);font-weight:700;color:var(--red);font-size:15px;letter-spacing:.06em;text-transform:uppercase}
+.coach .step .n{color:var(--remo)}
+.step ul,.step ol{margin:6px 0;padding-left:22px}
+.step li{margin:3px 0}
+.shots{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start}
+.shots img{width:100%;max-width:320px;height:auto;border-radius:12px;border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.08);background:#fff}
+@media (min-width:700px){.step{grid-template-columns:1fr 300px;align-items:start}.shots img{max-width:300px}}
+.tip{background:var(--red-soft);border-radius:10px;padding:8px 12px;font-size:15px}
+.coach .tip{background:var(--remo-soft)}
+.note{color:var(--muted);font-size:15px}
+footer{margin-top:36px;color:var(--muted);font-size:14px;text-align:center}
+@media print{body{font-size:11pt;padding:0}.step{grid-template-columns:1fr 430px!important;padding:10px;margin:8px 0}.shots{flex-wrap:nowrap}.shots img{max-width:210px!important;flex:1 1 0;min-width:0}.step{break-inside:avoid;box-shadow:none}.open,.toc{display:none}h2{break-before:page}h2.first{break-before:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <img src="icona.png" alt="Canottieri Montefeltro">
+  <div><div class="eyebrow">Canottieri Montefeltro · Under 19</div><h1>Manuale dell'allenatore</h1></div>
+</header>
+<p>Tutto quello che si fa dall'area allenatore: formati del giorno, esercizi, atleti, programmi personali, test, presenze, schede e foglio Google. Aggiornato il 22 ottobre 2026.</p>
+<a class="open" href="./">Apri l'app →</a>
+<h2 class="first" style="border-color:var(--remo)">Area allenatore</h2>
+<div class="coach">
+<div class="step"><div>
+  <div class="n">1 · Accesso</div>
+  <h3>Entrare e uscire come allenatore</h3>
+  <p>In fondo all'app tocca <b>Sono l'allenatore</b> e scrivi la password. Compaiono l'Area allenatore, l'elenco atleti, i test, il registro presenze e, sotto «Chi sei», il pulsante <b>📘 Manuale dell'allenatore</b> (questo manuale: gli atleti non vedono il pulsante).</p>
+  <p>Per uscire: «Esci dall'area allenatore» in fondo. Sullo stesso telefono puoi essere entrato anche come atleta: vedi entrambe le parti.</p>
+</div><div class="shots"><img src="tutorial/c1_accesso.jpg" alt=""><img src="tutorial/c0_manuale.jpg" alt=""></div></div>
+
+<div class="step"><div>
+  <div class="n">2 · Formato del giorno</div>
+  <h3>Repository dei formati</h3>
+  <p>Lunedì, mercoledì e venerdì apri <b>Area allenatore · esercizi e impostazioni</b>: in cima c'è <b>Formato dell'allenamento di questo giorno</b>. Al posto della struttura fissa scegli uno dei formati, con l'etichetta della parte prevalente:</p>
+  <ul><li><b>[Remo]</b> Fondo lungo a piramide (lunedì) · Turni da 8' remo + circuiti (venerdì) · Velocità al remo · Remo continuo a colpi crescenti · Staffette a squadre (Beach Sprint) · Tutti al remo a coppie</li>
+  <li><b>[Circuito]</b> 4 isole con sovraccarico (mercoledì)</li>
+  <li><b>[Pesi]</b> Scheda 1 · Scheda 2: corsa 15', attivazione 10', scheda, defaticamento 10', tutti in sala pesi</li></ul>
+  <p>Il formato vale subito, senza Salva. Cambia la sequenza dei gruppi, i minuti, la pianta e il testo del remo o della scheda pesi; gli esercizi dei circuiti A e B restano. Il testo predefinito viene inserito solo se quell'isola è vuota. Per tornare al programma scegli <b>Standard di oggi</b>.</p>
+  <p><b>Differenzia per gruppo:</b> spunta la casella e scegli un formato per G1, G2, G3, G4 («come tutti» segue quello generale). L'app non controlla gli spazi: con formati diversi verifica che due gruppi non siano sugli stessi remoergometri nello stesso momento. Il caso più semplice: un formato per G1 e G3 e un altro per G2 e G4, oppure i pesi per alcuni gruppi.</p>
+</div><div class="shots"><img src="tutorial/c14_formato.jpg" alt=""></div></div>
+
+<div class="step"><div>
+  <div class="n">3 · Tabata e remo</div>
+  <h3>Impostazione Tabata e lavoro al remoergometro</h3>
+  <ul><li><b>Impostazione Tabata:</b> una per tutti, per esempio «5 × 45"/15"». I tempi li gestite con l'app Tabata.</li>
+  <li><b>Remoergometro:</b> scrivi il lavoro, una riga per indicazione. Con <b>Prendi dalla libreria remo</b> inserisci un lavoro salvato, con <b>Salva questo lavoro nella libreria remo</b> lo conservi.</li>
+  <li>Lunedì: se scrivi le righe come «Pezzo da 5': …» e «Pezzo da 10': …», ogni pezzo mostra ai ragazzi solo la sua riga.</li>
+  <li>Le medie al remo sono personali: non scriverle per tutti.</li></ul>
+</div><div class="shots"><img src="tutorial/c2_tabata_remo.jpg" alt=""></div></div>
+
+<div class="step"><div>
+  <div class="n">4 · Circuiti</div>
+  <h3>Esercizi scelti dalle immagini</h3>
+  <p>In ogni isola circuito tocca <b>Scegli dalle immagini</b>: tocca le foto (diventano rosse), poi <b>Fatto</b>. Con ↑ cambi l'ordine, con ✕ togli. <b>Riga scritta</b> serve per un'indicazione libera; <b>Note</b> e <b>Indicazioni per gruppo</b> per testo visibile a tutti o solo a G1–G4.</p>
+</div><div class="shots"><img src="tutorial/c3_circuito.jpg" alt=""><img src="tutorial/c4_scegli.jpg" alt=""></div></div>
+
+<div class="step"><div>
+  <div class="n">5 · Pesi, in aggiunta e Salva</div>
+  <h3>Scheda pesi, allenamento in aggiunta e salvataggio</h3>
+  <ul><li><b>Scheda pesi</b> (formati Pesi): una riga per esercizio, per esempio «Back squat · 4 × 12/15 · 85%». Se il nome corrisponde a un esercizio della libreria, i ragazzi vedono anche la foto.</li>
+  <li><b>Allenamento in aggiunta</b> (facoltativo): titolo, descrizione ed esercizi; se lo lasci vuoto non compare.</li>
+  <li>Alla fine premi <b>Salva</b>: i ragazzi vedono subito le modifiche.</li></ul>
+</div><div class="shots"><img src="tutorial/c5_aggiunta.jpg" alt=""></div></div>
+
+<div class="step"><div>
+  <div class="n">6 · Lunedì e rotazioni</div>
+  <h3>Come funziona la sequenza del lunedì</h3>
+  <p>Piramide 5'-10'-10'-10'-5'. Dopo ogni pezzo al remo: <b>recupero 5'</b>, poi <b>circuito 5'</b> e subito di nuovo al remo. G1 e G2 partono dal remo; G3 e G4 partono con due circuiti (5' sul loro e 5' sull'altro) ed entrano al remo a 20'.</p>
+  <p><b>Con 10 ragazzi e 5 remoergometri</b> usa i gruppi <b>G1 e G3</b> (oppure G2 e G4): non sono mai al remo nello stesso momento. «Isola 1» e «Isola 2» del remo sono semplicemente i tuoi 5 remoergometri.</p>
+</div></div>
+
+<div class="step"><div>
+  <div class="n">7 · Atleti</div>
+  <h3>Atleti, username, PIN e sedute</h3>
+  <p>In <b>Atleti e username</b>, per ogni atleta: nome, <b>username</b>, anno, <b>PIN</b> (facoltativo) e <b>sedute</b> (6 o 4; con 4 martedì e giovedì sono in grigio). Il registro tiene conto dei cambi di sedute nel tempo. <b>Aggiungi atleta</b>, poi <b>Salva elenco</b>.</p>
+  <p>Se cambi il PIN a un atleta, sul suo telefono compare «Rientra con username e PIN». L'elenco con username e PIN si scarica dal foglio Google, scheda «Atleti»: File → Scarica.</p>
+</div><div class="shots"><img src="tutorial/c7_atleti.jpg" alt=""></div></div>
+
+<div class="step"><div>
+  <div class="n">8 · Programma e test di un atleta</div>
+  <h3>📋 Programma e test</h3>
+  <p>Accanto a ogni atleta tocca <b>📋 Programma e test</b> (si chiude con ✕ in alto, toccando fuori o con Chiudi):</p>
+  <ul><li><b>Nuovo allenamento personale:</b> tipo Remoergometro, Pesi, Circuito, Bike o Corsa, titolo e descrizione; per pesi e circuito anche gli esercizi dalle immagini. Lo vede solo lui, nel riquadro blu sotto la presenza.</li>
+  <li><b>Test:</b> i suoi risultati e la cronologia; puoi aggiungere un test per lui o cancellarne uno sbagliato.</li></ul>
+</div><div class="shots"><img src="tutorial/c11_scheda_atleta.jpg" alt=""><img src="tutorial/c12_nuovo_personale.jpg" alt=""></div></div>
+
+<div class="step"><div>
+  <div class="n">9 · Test atleti</div>
+  <h3>Tabella dei test</h3>
+  <p>I ragazzi inseriscono da soli i test: <b>500, 1000, 1500 e 2000 m remo, 4000 m bike</b>. In <b>Test atleti</b> vedi il miglior tempo di ognuno per test, con la data. Tutto finisce anche nella scheda «Test» del foglio Google.</p>
+</div><div class="shots"><img src="tutorial/c13_test_atleti.jpg" alt=""></div></div>
+
+<div class="step"><div>
+  <div class="n">10 · Presenze</div>
+  <h3>Registro presenze</h3>
+  <p>I ragazzi premono <b>Sono presente</b>, anche senza aver scelto il gruppo. Nel registro scegli un giorno per vedere chi c'era; sotto c'è il riepilogo <b>progressivo</b> dall'inizio della preparazione: presenze su sedute previste (6 o 4 per atleta) e percentuale. Ogni presenza è anche una riga nella scheda «Presenze» del foglio.</p>
+</div><div class="shots"><img src="tutorial/c8_registro.jpg" alt=""></div></div>
+
+<div class="step"><div>
+  <div class="n">11 · Altri allenamenti e PDF</div>
+  <h3>Libreria remo, altri allenamenti, schede PDF, libreria esercizi</h3>
+  <ul><li><b>Altri allenamenti:</b> libreria remoergometro e sezioni bike, corsa, pesi e circuito. Apri una sezione e tocca <b>Nuovo allenamento</b>; per cambiarlo <b>Modifica</b>.</li>
+  <li><b>Schede PDF:</b> <b>Carica schede PDF</b> (anche più insieme); ✎ rinomina, ✕ elimina (tocca due volte). Le vedono tutti: non caricare qui questo manuale.</li>
+  <li><b>Libreria · aggiungi esercizio:</b> nuovi esercizi con foto, che poi trovi in «Scegli dalle immagini».</li></ul>
+</div><div class="shots"><img src="tutorial/c9_nuovo_allenamento.jpg" alt=""><img src="tutorial/c10_pdf_carica.jpg" alt=""></div></div>
+
+<div class="step"><div>
+  <div class="n">12 · Foglio Google e script</div>
+  <h3>Dove stanno i dati e come si aggiorna lo script</h3>
+  <p>Tutto è salvato nel foglio Google dell'app: schede <b>Dati</b> (da non modificare a mano), <b>Presenze</b>, <b>Atleti</b> e <b>Test</b>. PDF e foto caricati sono nella cartella Drive «Montefeltro Allenamento - file».</p>
+  <p>Quando arriva un nuovo <b>Code.gs</b>: foglio → Estensioni → Apps Script → cancella tutto e incolla → alla <b>riga 8</b> la tua password → salva → Esegui il deployment → Gestisci deployment → matita → <b>Nuova versione</b> → Esegui il deployment. Il link dell'app non cambia.</p>
+  <p class="tip">La password allenatore si cambia alla riga 8 dello script, poi Nuova versione. Usane una lunga.</p>
+</div></div>
+
+<div class="step"><div>
+  <div class="n">13 · Se qualcosa non va</div>
+  <h3>Problemi frequenti</h3>
+  <ul><li><b>Non vedo le modifiche:</b> ricarica la pagina; se l'app è nella schermata Home chiudila del tutto e riaprila.</li>
+  <li><b>Un atleta non vede presenza e test:</b> deve rientrare con username e PIN (compare il messaggio in rosso).</li>
+  <li><b>«Connessione assente»:</b> controlla internet; se capita a tutti, controlla il deployment dello script.</li>
+  <li><b>Un test non si salva:</b> lo script del foglio non è all'ultima versione.</li></ul>
+</div></div>
+</div>
+<footer>Canottieri Montefeltro · Under 19 · Manuale dell'allenatore</footer>
+</div>
+</body>
+</html>
