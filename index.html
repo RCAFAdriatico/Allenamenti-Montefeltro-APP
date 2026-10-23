@@ -409,6 +409,13 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <summary>Test atleti</summary>
     <p class="note">Miglior tempo di ogni atleta per test (tra parentesi la data). Per aggiungere o correggere un test apri la scheda dell'atleta da «Atleti e username» → 📋.</p>
     <div id="testTab"></div>
+    <details class="libwrap" id="impWrap" style="margin-top:10px"><summary>＋ Importa test da un elenco</summary>
+      <p class="note">Una riga per atleta: <b>nome; anno; tempo; colpi; data</b> (data come 2026-10-09). Controlla l'anteprima e premi Importa.</p>
+      <div class="field"><label for="impTipo">Test</label><select id="impTipo" class="pl"></select></div>
+      <textarea id="impTxt" class="pl" rows="10" style="width:100%;font-family:inherit"></textarea>
+      <div class="row" style="margin-top:8px"><button type="button" class="btn sec" id="impPrev">Anteprima</button></div>
+      <div id="impOut"></div>
+    </details>
     <div class="row"><button type="button" class="btn sec dclose">Chiudi i test ▲</button></div>
   </details>
   <dialog class="exd pickd" id="persD"><div class="in">
@@ -983,6 +990,46 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       B.appendChild(testForm(async r=>{ await db.doc("test/"+uid).set({risultati:myTests.concat([r])}); })); }
   }
   function nameOf(u){ const r=roster.find(x=>x.username===u); return (r&&r.nome)||u; }
+  // ---------- Importazione test da elenco (allenatore) ----------
+  const IMP0=`Luca; 2009; 3:31.1; 36; 2026-10-09
+Seba; 2010; 3:23.8; 36; 2026-10-09
+Ale; 2010; 3:10.5; 37; 2026-10-09
+Vale; 2009; 3:28.1; 35; 2026-10-09
+Miky; 2011; 3:26.1; 33; 2026-10-09
+Kuba; 2008; 3:32.6; 32; 2026-10-09
+Bea; 2010; 4:01.3; 29; 2026-10-09
+Elena; 2012; 4:05.8; 29; 2026-10-09
+Manuel; 2012; 3:21.4; 33; 2026-10-09
+Thomas; 2012; 3:57.6; 32; 2026-10-09
+Adele; 2012; 4:04.7; 26; 2026-10-16
+Anita; 2012; 4:01.9; 30; 2026-10-16
+Viola; 2013; 4:17.3; 29; 2026-10-16`;
+  const ALIAS={miky:["mich","mik"],kuba:["jakub","kuba","giacom"],ale:["ale"],vale:["vale"],seba:["seba"],bea:["bea"],gabri:["gabri"],fede:["fede"]};
+  function matchAth(nick,anno){ const n=nrm(nick).split(" ")[0]; const pre=ALIAS[n]||[n];
+    const c=roster.filter(r=>{ const f=nrm(r.nome||"").split(" ")[0], u=nrm(r.username||""); return pre.some(p=>f.startsWith(p)||u.startsWith(p)); });
+    const y=c.filter(r=>!anno||+r.anno===+anno); const pick=(y.length?y:c); return pick.length===1?pick[0].username:""; }
+  let impRows=[];
+  function impPreview(){ const tipo=$("impTipo").value; impRows=$("impTxt").value.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{ const p=l.split(/[;\t]/).map(x=>x.trim());
+      const sec=parseT((p[2]||"").replace(/['’]/,":").replace(/["”]/,".")); return {nick:p[0]||"",anno:p[1]||"",sec,colpi:p[3]||"",data:p[4]||today(),u:matchAth(p[0]||"",p[1]),tipo}; });
+    const O=$("impOut"); O.innerHTML=""; if(!impRows.length){ O.innerHTML=`<p class="note">Nessuna riga.</p>`; return; }
+    const t=document.createElement("table"); t.className="tbl"; t.innerHTML="<thead><tr><th>Nome</th><th>Atleta</th><th class='n'>Tempo</th><th class='n'>/500</th><th>Data</th></tr></thead>"; const tb=document.createElement("tbody");
+    impRows.forEach((r,i)=>{ const tr=document.createElement("tr"); const sel=`<select class="pl" data-i="${i}" style="max-width:130px"><option value="">— scegli —</option>${roster.slice().sort((a,b)=>(a.nome||"").localeCompare(b.nome||"")).map(a=>`<option value="${a.username}"${a.username===r.u?" selected":""}>${(a.nome||a.username).replace(/</g,"&lt;")}</option>`).join("")}</select>`;
+      tr.innerHTML=`<td></td><td>${sel}</td><td class="n">${r.sec?fmtT(r.sec):"<b style='color:var(--red)'>?</b>"}</td><td class="n">${r.sec?split(tipo,r.sec):""}</td><td>${r.data.split("-").reverse().slice(0,2).join("/")}</td>`; tr.firstChild.textContent=r.nick+(r.anno?" ("+r.anno+")":""); tb.appendChild(tr); });
+    t.appendChild(tb); const wr=document.createElement("div"); wr.style.overflowX="auto"; wr.appendChild(t); O.appendChild(wr);
+    O.querySelectorAll("select[data-i]").forEach(x=>x.onchange=()=>{ impRows[+x.dataset.i].u=x.value; impCount(); });
+    O.insertAdjacentHTML("beforeend",`<div class="row" style="margin-top:8px"><button type="button" class="btn" id="impGo"></button></div><p class="note" id="impMsg"></p>`);
+    $("impGo").onclick=impGo; impCount(); }
+  function impCount(){ const ok=impRows.filter(r=>r.u&&r.sec).length, no=impRows.length-ok; $("impGo").textContent="Importa "+ok+" test"; $("impGo").disabled=!ok; $("impMsg").textContent=no?no+" righe senza atleta o tempo: non verranno importate (scegli l'atleta dal menu).":""; }
+  async function impGo(){ $("impGo").disabled=true; $("impMsg").textContent="Importazione…"; let n=0, dup=0; const by={};
+    impRows.filter(r=>r.u&&r.sec).forEach(r=>(by[r.u]=by[r.u]||[]).push(r));
+    try{ for(const u of Object.keys(by)){ const cur=(allTests[u]||[]).slice(); let k=0;
+        by[u].forEach(r=>{ const sec=Math.round(r.sec*10)/10; if(cur.some(x=>x.tipo===r.tipo&&x.data===r.data&&Math.abs(x.sec-sec)<0.05)){ dup++; return; }
+          cur.push({id:"t"+Date.now().toString(36)+(k++),tipo:r.tipo,data:r.data,sec,note:r.colpi?r.colpi+" colpi/min":"",creato:Date.now()}); n++; });
+        await db.doc("test/"+u).set({risultati:cur}); }
+      $("impMsg").textContent="Importati "+n+" test"+(dup?" ("+dup+" erano già presenti e li ho saltati)":"")+". Li vedi nella tabella qui sopra e nella scheda «Test» del foglio."; }
+    catch(e){ $("impMsg").textContent="Errore durante l'importazione: riprova."; $("impGo").disabled=false; } }
+  $("impTipo").innerHTML=TESTS.map(t=>`<option value="${t[0]}"${t[0]==="r1000"?" selected":""}>${t[1]}</option>`).join("");
+  $("impTxt").value=IMP0; $("impPrev").onclick=impPreview;
   function renderTestCoach(){
     if(!coach) return; const T=$("testTab"); T.innerHTML="";
     const users=[...new Set(roster.map(r=>r.username).concat(Object.keys(allTests)))].filter(u=>(allTests[u]||[]).length);
