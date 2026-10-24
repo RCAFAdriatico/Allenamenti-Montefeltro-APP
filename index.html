@@ -80,6 +80,7 @@ ol.seq li .d small{display:block;color:var(--muted);font-size:13px}
 ol.seq li.k-remo .d b{color:var(--remo)}
 ol.seq li.k-recupero .d b,ol.seq li.k-chiusura .d b{color:var(--muted);font-weight:500}
 ol.seq li.cur{background:var(--red-soft)}
+#testTab{overflow-x:auto;max-width:100%}
 .testform .tt3{display:flex!important;flex-direction:row;align-items:center;gap:6px;flex-wrap:nowrap}.tt3 span{font-weight:600;margin-right:4px}.testform .tt3 b,.testform .tt3 span{display:inline;width:auto}.testform .tt3 input{width:52px!important;flex:0 0 52px;margin:0;text-align:center;font-size:18px;padding:8px 4px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}.tt3 b{font-weight:500;color:var(--muted);font-size:14px;margin-right:6px}
 .fmtbox{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}.fmtchk{display:flex;align-items:center;gap:8px;margin-top:8px;font-weight:500;text-transform:none;letter-spacing:0}.fmtbox select{width:100%;min-width:0;max-width:100%}.fmtg{display:grid;grid-template-columns:60px minmax(0,1fr);align-items:center;gap:8px;margin-top:6px}
 .pausa{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:10px 14px;border:1px dashed var(--muted);border-radius:14px;background:var(--bg);color:var(--muted);font-size:15px}
@@ -940,7 +941,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     $("pdfMsg").textContent=ok===1?"Scheda caricata.":ok+" schede caricate."; });
 
   // ---------- Test (500, 1000, 1500, 2000 remo · 4000 bike) ----------
-  const TESTS=[["r500","500 m remo",500],["r1000","1000 m remo",1000],["r1500","1500 m remo",1500],["r2000","2000 m remo",2000],["b4000","4000 m bike",4000]];
+  const TESTS=[["r500","500 m remo",500],["r1000","1000 m remo",1000],["r1500","1500 m remo",1500],["r2000","2000 m remo",2000],["r6000","6000 m remo",6000],["b4000","4000 m bike",4000]];
   const tName=k=>(TESTS.find(t=>t[0]===k)||[k,k])[1];
   const tDist=k=>(TESTS.find(t=>t[0]===k)||[0,0,0])[2];
   function parseT(v){ v=String(v||"").trim().replace(",","."); if(!v) return null; let m=/^(\d+):(\d{1,2}(?:\.\d+)?)$/.exec(v); if(m) return +m[1]*60+ +m[2]; m=/^(\d+(?:\.\d+)?)$/.exec(v); return m?+m[1]:null; }
