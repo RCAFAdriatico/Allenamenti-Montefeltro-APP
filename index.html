@@ -80,6 +80,7 @@ ol.seq li .d small{display:block;color:var(--muted);font-size:13px}
 ol.seq li.k-remo .d b{color:var(--remo)}
 ol.seq li.k-recupero .d b,ol.seq li.k-chiusura .d b{color:var(--muted);font-weight:500}
 ol.seq li.cur{background:var(--red-soft)}
+.testform .tt3{display:flex!important;flex-direction:row;align-items:center;gap:6px;flex-wrap:nowrap}.tt3 span{font-weight:600;margin-right:4px}.testform .tt3 b,.testform .tt3 span{display:inline;width:auto}.testform .tt3 input{width:52px!important;flex:0 0 52px;margin:0;text-align:center;font-size:18px;padding:8px 4px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}.tt3 b{font-weight:500;color:var(--muted);font-size:14px;margin-right:6px}
 .fmtbox{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}.fmtchk{display:flex;align-items:center;gap:8px;margin-top:8px;font-weight:500;text-transform:none;letter-spacing:0}.fmtbox select{width:100%;min-width:0;max-width:100%}.fmtg{display:grid;grid-template-columns:60px minmax(0,1fr);align-items:center;gap:8px;margin-top:6px}
 .pausa{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:10px 14px;border:1px dashed var(--muted);border-radius:14px;background:var(--bg);color:var(--muted);font-size:15px}
 .pausa b{color:var(--ink);font-weight:600}
@@ -948,11 +949,13 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   const dIt=d=>{ const [y,m,g]=String(d||"").split("-"); return g?g+"/"+m+"/"+y.slice(2):d; };
   function bestOf(list,k){ let b=null; (list||[]).forEach(r=>{ if(r.tipo===k && r.sec>0 && (!b||r.sec<b.sec)) b=r; }); return b; }
   function testForm(onSave){ const f=document.createElement("div"); f.className="testform";
-    f.innerHTML=`<select class="tk">${TESTS.map(t=>`<option value="${t[0]}">${t[1]}</option>`).join("")}</select><input class="td" type="date"><input class="tt full" placeholder="Tempo, es. 7:05,3" inputmode="decimal"><input class="tn full" placeholder="Note (facoltative)"><button type="button" class="btn sm full">Salva test</button><div class="status full"></div>`;
+    f.innerHTML=`<select class="tk">${TESTS.map(t=>`<option value="${t[0]}">${t[1]}</option>`).join("")}</select><input class="td" type="date"><div class="tt3 full"><input class="tm" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="7"><b>min</b><input class="ts" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="05"><b>sec</b><input class="tdc" inputmode="numeric" pattern="[0-9]*" maxlength="1" placeholder="3"><b>dec.</b></div><input class="tn full" placeholder="Note (facoltative)"><button type="button" class="btn sm full">Salva test</button><div class="status full"></div>`;
     f.querySelector(".td").value=today();
-    f.querySelector("button").onclick=async()=>{ const sec=parseT(f.querySelector(".tt").value), st=f.querySelector(".status");
-      if(!sec){ st.textContent="Scrivi il tempo come minuti:secondi, es. 7:05,3"; return; }
-      try{ await onSave({id:"t"+Date.now().toString(36),tipo:f.querySelector(".tk").value,data:f.querySelector(".td").value||today(),sec:Math.round(sec*10)/10,note:f.querySelector(".tn").value.trim(),creato:Date.now()}); st.textContent="Test salvato."; f.querySelector(".tt").value=""; f.querySelector(".tn").value=""; }
+    const q=c=>f.querySelector(c); q(".tm").oninput=()=>{ if(q(".tm").value.length>=2) q(".ts").focus(); }; q(".ts").oninput=()=>{ if(q(".ts").value.length>=2) q(".tdc").focus(); };
+    f.querySelector("button").onclick=async()=>{ const st=f.querySelector(".status"); const mi=parseInt(q(".tm").value||"0",10), se=parseInt(q(".ts").value||"0",10), de=parseInt(q(".tdc").value||"0",10);
+      const sec=(isNaN(mi)||isNaN(se)||isNaN(de)||se>59)?null:mi*60+se+de/10;
+      if(!sec){ st.textContent="Scrivi minuti, secondi e decimi, es. 7 min 05 sec 3 dec."; return; }
+      try{ await onSave({id:"t"+Date.now().toString(36),tipo:f.querySelector(".tk").value,data:f.querySelector(".td").value||today(),sec:Math.round(sec*10)/10,note:f.querySelector(".tn").value.trim(),creato:Date.now()}); st.textContent="Test salvato."; q(".tm").value=""; q(".ts").value=""; q(".tdc").value=""; f.querySelector(".tn").value=""; }
       catch(e){ st.textContent="Non salvato: "+(e.message||e); } };
     return f; }
   function testList(list,onDel){ const box=document.createElement("div");
