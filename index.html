@@ -194,6 +194,7 @@ dialog.pdfv{max-width:820px;width:calc(100% - 16px);max-height:96vh}
 .rosrow input,.rosrow select{font:inherit;font-size:15px;border:1.5px solid var(--line);border-radius:8px;padding:7px;background:var(--surface);color:var(--ink);min-width:0;width:100%;box-sizing:border-box}
 .rosrow{grid-template-columns:1fr 1fr 40px}
 .guide{display:grid;grid-template-columns:1fr 1fr;gap:8px}.guide a.man{grid-column:1/-1;border-color:var(--remo);color:var(--remo)}.guide a[hidden]{display:none}.guide a{display:flex;align-items:center;justify-content:center;text-align:center;min-height:48px;padding:8px 10px;border-radius:12px;background:var(--surface);border:1px solid var(--line);color:var(--ink);font-weight:600;text-decoration:none;font-size:15px;line-height:1.2}
+.rosrow .ay{display:flex;gap:6px;min-width:0}.rosrow .ay input{flex:1 1 auto}.rosrow .ay select{flex:0 0 58px;width:58px}
 .rosrow>:nth-child(1){grid-column:1/3;grid-row:1}
 .rosrow>:nth-child(2){grid-column:3;grid-row:1}
 .rosrow>:nth-child(3){grid-column:1;grid-row:2}
@@ -410,7 +411,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   </details>
   <details class="coach" id="testCoach" hidden>
     <summary>Test atleti</summary>
-    <p class="note">Miglior tempo di ogni atleta per test, in ordine di anno di nascita (sotto il tempo, la data). Per aggiungere o correggere un test apri la scheda dell'atleta da «Atleti e username» → 📋.</p>
+    <p class="note">Miglior tempo di ogni atleta per test: maschi 2008–2012, femmine 2008–2012 e Under 14 (2013–2014). Sotto il tempo, la data. Il sesso si imposta in «Atleti e username». Per aggiungere o correggere un test apri la scheda dell'atleta da «Atleti e username» → 📋.</p>
     <details class="libwrap" id="impWrap" style="margin-top:10px"><summary>📥 Importa test da un elenco</summary>
       <p class="note">Una riga per atleta: <b>nome; anno; tempo; colpi; data</b> (data come 2026-10-09). Controlla l'anteprima e premi Importa.</p>
       <div class="field"><label for="impTipo">Test</label><select id="impTipo" class="pl"></select></div>
@@ -994,6 +995,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       const p=document.createElement("p"); p.className="label"; p.style.marginTop="12px"; p.textContent="Aggiungi un test"; B.appendChild(p);
       B.appendChild(testForm(async r=>{ await db.doc("test/"+uid).set({risultati:myTests.concat([r])}); })); }
   }
+  const FNOM=["luca","andrea","nicola","mattia","elia","tobia","enea","gianluca","kuba","giosuea","battista"];
+  function sexOf(r){ if(!r) return ""; if(r.sesso) return r.sesso; const f=nrm(r.nome||"").split(" ")[0]; return (f.endsWith("a")&&!FNOM.includes(f))?"F":"M"; }
   function nameOf(u){ const r=roster.find(x=>x.username===u); return (r&&r.nome)||u; }
   // ---------- Importazione test da elenco (allenatore) ----------
   const IMP0=`Luca; 2009; 3:31.1; 36; 2026-10-09
@@ -1040,10 +1043,13 @@ Viola; 2013; 4:17.3; 29; 2026-10-16`;
     const users=[...new Set(roster.map(r=>r.username).concat(Object.keys(allTests)))].filter(u=>(allTests[u]||[]).length);
     if(!users.length){ T.innerHTML=`<p class="note">Ancora nessun test inserito.</p>`; return; }
     const t=document.createElement("table"); t.className="tbl"; t.innerHTML="<thead><tr><th>Atleta</th>"+TESTS.map(x=>`<th class='n'>${x[1].replace(" remo","").replace(" bike"," bike")}</th>`).join("")+"</tr></thead><tbody></tbody>";
-    const annoOf=u=>{ const r=roster.find(x=>x.username===u); return (r&&+r.anno)||9999; }; let lastY=null;
-    users.sort((a,b)=>annoOf(a)-annoOf(b)||nameOf(a).localeCompare(nameOf(b))).forEach(u=>{ const y=annoOf(u);
-      if(y!==lastY){ lastY=y; const hr=document.createElement("tr"); const hd=document.createElement("td"); hd.colSpan=TESTS.length+1; hd.className="yrow"; hd.textContent=y===9999?"Anno non indicato":"Nati nel "+y; hr.appendChild(hd); t.tBodies[0].appendChild(hr); }
-      const tr=document.createElement("tr"); const a=document.createElement("td"); a.textContent=nameOf(u); tr.appendChild(a);
+    const recOf=u=>roster.find(x=>x.username===u); const annoOf=u=>{ const r=recOf(u); return (r&&+r.anno)||9999; };
+    const CATS2=["Maschi 2008–2012","Femmine 2008–2012","Under 14 · 2013–2014","Altri"];
+    const catOf=u=>{ const y=annoOf(u); if(y>=2013&&y<=2014) return 2; if(y>=2008&&y<=2012) return sexOf(recOf(u))==="F"?1:0; return 3; };
+    let lastC=null;
+    users.sort((a,b)=>catOf(a)-catOf(b)||annoOf(a)-annoOf(b)||nameOf(a).localeCompare(nameOf(b))).forEach(u=>{ const c=catOf(u);
+      if(c!==lastC){ lastC=c; const hr=document.createElement("tr"); const hd=document.createElement("td"); hd.colSpan=TESTS.length+1; hd.className="yrow"; hd.textContent=CATS2[c]; hr.appendChild(hd); t.tBodies[0].appendChild(hr); }
+      const tr=document.createElement("tr"); const a=document.createElement("td"); a.textContent=nameOf(u); const ys=document.createElement("small"); ys.style.cssText="display:block;color:var(--muted)"; ys.textContent=annoOf(u)===9999?"anno ?":String(annoOf(u)); a.appendChild(ys); tr.appendChild(a);
       TESTS.forEach(([k])=>{ const b=bestOf(allTests[u],k); const td=document.createElement("td"); td.className="n"; td.textContent=b?fmtT(b.sec):"—"; if(b){ const sm=document.createElement("small"); sm.style.display="block"; sm.style.color="var(--muted)"; sm.textContent=dIt(b.data); td.appendChild(sm); } tr.appendChild(td); });
       t.tBodies[0].appendChild(tr); });
     T.appendChild(t); }
@@ -1069,7 +1075,7 @@ Viola; 2013; 4:17.3; 29; 2026-10-16`;
   document.querySelectorAll(".dclose").forEach(b=>b.onclick=()=>{ const d=b.closest("details"); d.open=false; d.scrollIntoView({block:"nearest",behavior:"smooth"}); });
   function renderAll(){ renderWho(); renderPickers(); renderList(); renderPres(); renderReg(); }
   let rosEd=[], rosDirty=false;
-  function loadRosEd(){ rosEd=roster.map(r=>({nome:r.nome||"",username:r.username||"",anno:r.anno||"",pin:r.pin||"",sedute:seduteOn(r,today())})); rosDirty=false; }
+  function loadRosEd(){ rosEd=roster.map(r=>({nome:r.nome||"",username:r.username||"",anno:r.anno||"",pin:r.pin||"",sesso:sexOf(r),sedute:seduteOn(r,today())})); rosDirty=false; }
   function renderRos(){
     const L=$("rosList"); L.innerHTML="";
     if(!rosEd.length){ L.innerHTML=`<p class="note">Nessun atleta: tocca «Aggiungi atleta».</p>`; return; }
@@ -1078,11 +1084,13 @@ Viola; 2013; 4:17.3; 29; 2026-10-16`;
       const us=document.createElement("input"); us.placeholder="username"; us.autocapitalize="none"; us.spellcheck=false; us.value=r.username; us.oninput=()=>{ r.username=us.value.trim().toLowerCase(); rosDirty=true; };
       const pn=document.createElement("input"); pn.placeholder="PIN (facoltativo)"; pn.inputMode="numeric"; pn.value=r.pin||""; pn.oninput=()=>{ r.pin=pn.value.trim(); rosDirty=true; };
       const an=document.createElement("input"); an.placeholder="Anno nascita"; an.inputMode="numeric"; an.value=r.anno; an.oninput=()=>{ r.anno=an.value; rosDirty=true; };
+      const sx=document.createElement("select"); sx.setAttribute("aria-label","Sesso"); sx.innerHTML=`<option value="M">M</option><option value="F">F</option>`; sx.value=r.sesso||"M"; sx.onchange=()=>{ r.sesso=sx.value; rosDirty=true; };
+      const ay=document.createElement("div"); ay.className="ay"; ay.append(an,sx);
       const sd=document.createElement("select"); sd.className="sd"; sd.setAttribute("aria-label","Sedute"); sd.innerHTML=`<option value="6">6 sedute (lun–sab)</option><option value="4">4 sedute (no mar, gio)</option>`; sd.value=String(r.sedute||6); sd.onchange=()=>{ r.sedute=+sd.value; rosDirty=true; };
       const rm=document.createElement("button"); rm.type="button"; rm.className="edb"; rm.textContent="✕"; rm.setAttribute("aria-label","Togli atleta"); rm.onclick=()=>{ rosEd.splice(i,1); rosDirty=true; renderRos(); };
-      const pb=document.createElement("button"); pb.type="button"; pb.className="btn sec sm"; pb.textContent="📋 Programma e test"; pb.disabled=!r.username||!roster.some(x=>x.username===r.username); pb.title=pb.disabled?"Salva prima l'elenco":""; pb.onclick=()=>openPers(r.username); row.append(nm,rm,us,an,pn,sd,pb); L.appendChild(row); });
+      const pb=document.createElement("button"); pb.type="button"; pb.className="btn sec sm"; pb.textContent="📋 Programma e test"; pb.disabled=!r.username||!roster.some(x=>x.username===r.username); pb.title=pb.disabled?"Salva prima l'elenco":""; pb.onclick=()=>openPers(r.username); row.append(nm,rm,us,ay,pn,sd,pb); L.appendChild(row); });
   }
-  $("rosAdd").addEventListener("click",()=>{ rosEd.push({nome:"",username:"",anno:"",sedute:6}); rosDirty=true; renderRos(); const ins=$("rosList").querySelectorAll(".nm"); ins[ins.length-1].focus(); });
+  $("rosAdd").addEventListener("click",()=>{ rosEd.push({nome:"",username:"",anno:"",sesso:"M",sedute:6}); rosDirty=true; renderRos(); const ins=$("rosList").querySelectorAll(".nm"); ins[ins.length-1].focus(); });
   $("rosSave").addEventListener("click",async()=>{
     const T=today(); const rows=rosEd.map(r=>({...r,nome:r.nome.trim(),username:r.username.trim().toLowerCase()})).filter(r=>r.nome||r.username);
     if(rows.some(r=>!r.nome||!r.username)){ $("rosMsg").textContent="Ogni atleta ha bisogno di nome e username."; return; }
@@ -1091,7 +1099,7 @@ Viola; 2013; 4:17.3; 29; 2026-10-16`;
     const lista=rows.map(r=>{ const old=roster.find(o=>o.username===r.username); let storico=old&&old.storico?old.storico.slice():[];
       if(!old) storico=[{dal:"2000-01-01",n:r.sedute}];
       else { if(!storico.length) storico=[{dal:"2000-01-01",n:seduteOn(old,T)}]; if(seduteOn({storico},T)!==r.sedute){ storico=storico.filter(x=>x.dal!==T); storico.push({dal:T,n:r.sedute}); } }
-      return {nome:r.nome,username:r.username,anno:parseInt(r.anno,10)||0,pin:r.pin||"",sedute:r.sedute,storico}; });
+      return {nome:r.nome,username:r.username,anno:parseInt(r.anno,10)||0,sesso:r.sesso||"M",pin:r.pin||"",sedute:r.sedute,storico}; });
     try{ await db.doc("atleti/elenco").set({lista,aggiornato:Date.now()}); rosDirty=false; $("rosMsg").textContent="Salvato: "+lista.length+" atleti."; }catch(e){ $("rosMsg").textContent="Non salvato: "+(e.message||e); } });
   renderWho(); renderPickers(); renderList(); renderEditor(); renderLib(); renderAlt();
   (async()=>{
