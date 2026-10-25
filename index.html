@@ -81,6 +81,7 @@ ol.seq li.k-remo .d b{color:var(--remo)}
 ol.seq li.k-recupero .d b,ol.seq li.k-chiusura .d b{color:var(--muted);font-weight:500}
 ol.seq li.cur{background:var(--red-soft)}
 #testTab{overflow-x:auto;max-width:100%}
+#testTab td.yrow{background:var(--bg);font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding-top:10px}
 .testform .tt3{display:flex!important;flex-direction:row;align-items:center;gap:6px;flex-wrap:nowrap}.tt3 span{font-weight:600;margin-right:4px}.testform .tt3 b,.testform .tt3 span{display:inline;width:auto}.testform .tt3 input{width:52px!important;flex:0 0 52px;margin:0;text-align:center;font-size:18px;padding:8px 4px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}.tt3 b{font-weight:500;color:var(--muted);font-size:14px;margin-right:6px}
 .fmtbox{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}.fmtchk{display:flex;align-items:center;gap:8px;margin-top:8px;font-weight:500;text-transform:none;letter-spacing:0}.fmtbox select{width:100%;min-width:0;max-width:100%}.fmtg{display:grid;grid-template-columns:60px minmax(0,1fr);align-items:center;gap:8px;margin-top:6px}
 .pausa{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:10px 14px;border:1px dashed var(--muted);border-radius:14px;background:var(--bg);color:var(--muted);font-size:15px}
@@ -409,7 +410,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   </details>
   <details class="coach" id="testCoach" hidden>
     <summary>Test atleti</summary>
-    <p class="note">Miglior tempo di ogni atleta per test (tra parentesi la data). Per aggiungere o correggere un test apri la scheda dell'atleta da «Atleti e username» → 📋.</p>
+    <p class="note">Miglior tempo di ogni atleta per test, in ordine di anno di nascita (sotto il tempo, la data). Per aggiungere o correggere un test apri la scheda dell'atleta da «Atleti e username» → 📋.</p>
     <details class="libwrap" id="impWrap" style="margin-top:10px"><summary>📥 Importa test da un elenco</summary>
       <p class="note">Una riga per atleta: <b>nome; anno; tempo; colpi; data</b> (data come 2026-10-09). Controlla l'anteprima e premi Importa.</p>
       <div class="field"><label for="impTipo">Test</label><select id="impTipo" class="pl"></select></div>
@@ -1039,7 +1040,10 @@ Viola; 2013; 4:17.3; 29; 2026-10-16`;
     const users=[...new Set(roster.map(r=>r.username).concat(Object.keys(allTests)))].filter(u=>(allTests[u]||[]).length);
     if(!users.length){ T.innerHTML=`<p class="note">Ancora nessun test inserito.</p>`; return; }
     const t=document.createElement("table"); t.className="tbl"; t.innerHTML="<thead><tr><th>Atleta</th>"+TESTS.map(x=>`<th class='n'>${x[1].replace(" remo","").replace(" bike"," bike")}</th>`).join("")+"</tr></thead><tbody></tbody>";
-    users.sort((a,b)=>nameOf(a).localeCompare(nameOf(b))).forEach(u=>{ const tr=document.createElement("tr"); const a=document.createElement("td"); a.textContent=nameOf(u); tr.appendChild(a);
+    const annoOf=u=>{ const r=roster.find(x=>x.username===u); return (r&&+r.anno)||9999; }; let lastY=null;
+    users.sort((a,b)=>annoOf(a)-annoOf(b)||nameOf(a).localeCompare(nameOf(b))).forEach(u=>{ const y=annoOf(u);
+      if(y!==lastY){ lastY=y; const hr=document.createElement("tr"); const hd=document.createElement("td"); hd.colSpan=TESTS.length+1; hd.className="yrow"; hd.textContent=y===9999?"Anno non indicato":"Nati nel "+y; hr.appendChild(hd); t.tBodies[0].appendChild(hr); }
+      const tr=document.createElement("tr"); const a=document.createElement("td"); a.textContent=nameOf(u); tr.appendChild(a);
       TESTS.forEach(([k])=>{ const b=bestOf(allTests[u],k); const td=document.createElement("td"); td.className="n"; td.textContent=b?fmtT(b.sec):"—"; if(b){ const sm=document.createElement("small"); sm.style.display="block"; sm.style.color="var(--muted)"; sm.textContent=dIt(b.data); td.appendChild(sm); } tr.appendChild(td); });
       t.tBodies[0].appendChild(tr); });
     T.appendChild(t); }
