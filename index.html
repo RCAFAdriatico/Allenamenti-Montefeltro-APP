@@ -80,6 +80,7 @@ ol.seq li .d small{display:block;color:var(--muted);font-size:13px}
 ol.seq li.k-remo .d b{color:var(--remo)}
 ol.seq li.k-recupero .d b,ol.seq li.k-chiusura .d b{color:var(--muted);font-weight:500}
 ol.seq li.cur{background:var(--red-soft)}
+.rotbox{border:1px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--bg);margin:8px 0}.rotbox summary{cursor:pointer;font-size:15px}.rotbox .rotch{color:var(--remo);text-decoration:underline;font-size:13px;margin-left:4px}.rotbox[open] .rotch{display:none}.rotbox .fmtbox{border:0;padding:6px 0 0;background:none}
 .stepH{font-family:var(--display);font-size:20px;margin:18px 0 6px;padding-top:10px;border-top:1px solid var(--line)}.draftbar{background:#fff4d6;color:#7a5200;border-radius:10px;padding:8px 12px;font-weight:600;font-size:14px;margin:6px 0}.rotprev{margin-top:6px;font-size:13px;line-height:1.45}.rotprev div{margin-top:2px}
 tr.regp{cursor:pointer}.onep{display:grid;gap:2px;padding:4px 0 8px}.onep div{display:flex;justify-content:space-between;font-size:14px;padding:3px 8px;border-radius:6px;background:var(--bg)}.onep .no b{color:var(--red)}.onep .ok b{color:#1b8a4a}.onep .g b{color:var(--remo)}
 .regchk{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}.regchk label{display:flex;align-items:center;gap:6px;font-size:15px}
@@ -383,20 +384,20 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <div class="row" style="align-items:center"><span class="note" id="pickN" style="flex:1"></span><button class="btn" id="pickOk" style="flex:0 0 auto">Fatto</button></div></div></dialog>
   <details class="coach" id="coach" hidden>
     <summary>Area allenatore · esercizi e impostazioni</summary>
-    <p class="note">Prepari la seduta del giorno scelto in alto in 4 passi. I ragazzi vedono le modifiche solo quando premi <b>Pubblica</b>.</p>
+    <p class="note">Prepari la seduta del giorno scelto in alto: metti in ogni isola l'allenamento da fare e premi <b>Pubblica</b>. I ragazzi vedono le modifiche solo dopo Pubblica.</p>
     <div class="draftbar" id="draftBar" hidden>Modifiche non ancora pubblicate</div>
-    <h3 class="stepH" id="step1h">1 · Che seduta è</h3>
-    <div class="field fmtbox" id="fmtField" hidden><label for="fmtSel">Struttura: come si gira tra le isole</label><select id="fmtSel" class="pl"></select>
+    <details class="rotbox" id="step1h"><summary>🔄 Rotazione: <b id="rotName"></b> <span class="rotch">cambia</span></summary>
+    <div class="field fmtbox" id="fmtField" hidden><label for="fmtSel">Come si gira tra le isole</label><select id="fmtSel" class="pl"></select>
       <div class="note" id="fmtNote"></div>
-      <label class="fmtchk"><input type="checkbox" id="fmtPer"> Un'altra seduta per i più giovani</label>
-      <div id="fmtGr" hidden></div></div>
-    <h3 class="stepH">2 · Cosa si fa in ogni isola</h3>
+      <label class="fmtchk"><input type="checkbox" id="fmtPer"> Un'altra rotazione per i più giovani</label>
+      <div id="fmtGr" hidden></div></div></details>
+    <h3 class="stepH">1 · Cosa si fa in ogni isola</h3>
     <p class="note" style="margin-top:0">Per ogni isola prendi un allenamento dalla 📚 libreria oppure scrivilo tu.</p>
     <div id="editor"></div>
-    <h3 class="stepH">3 · Tabata e allenamento in aggiunta</h3>
+    <h3 class="stepH">2 · Tabata e allenamento in aggiunta</h3>
     <div class="field" id="tabField"><label for="tabIn">Impostazione Tabata (per tutti)</label><input id="tabIn" class="pl" placeholder="es. 30&quot;/10&quot; × 6 · 2 giri"></div>
     <div id="extraEd" class="extra-ed"></div>
-    <h3 class="stepH">4 · Controlla e pubblica</h3>
+    <h3 class="stepH">3 · Controlla e pubblica</h3>
     <p class="note" style="margin-top:0">In cima alla pagina vedi la seduta come la vedranno i ragazzi: scegli un gruppo per controllarla.</p>
     <div class="row" style="margin-top:8px"><button class="btn sec" id="prevBtn" type="button">👀 Guarda l'anteprima</button><button class="btn" id="saveEx">Pubblica</button></div>
     <div class="status" id="saveMsg"></div>
@@ -446,7 +447,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <div id="persTest"></div>
     <div class="row"><button type="button" class="btn sec" id="persClose">Chiudi</button></div>
   </div></dialog>
-  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 07/11/2026 14:15</p>
+  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 07/11/2026 14:29</p>
   <details class="coach" id="reg" hidden>
     <summary>Registro presenze</summary>
     <div class="field"><label for="regDate">Giorno</label><input type="date" id="regDate" style="font:inherit;border:1.5px solid var(--line);border-radius:8px;padding:6px;background:var(--bg);color:var(--ink)"></div>
@@ -780,7 +781,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     G.innerHTML=`<div class="fmtg"><b>Dal</b><select class="pl" id="fmtDal">${anni.map(a=>`<option value="${a}"${a==dal?" selected":""}>nati dal ${a} in poi</option>`).join("")}</select></div>
       <div class="fmtg"><b>Fanno</b><select class="pl" id="fmtYoung">${fmtOptions(fId((e&&e.giovani)||""),true)}</select></div>
       <p class="note" style="margin:6px 0 0">Gli altri fanno la seduta scelta sopra. L'età la prende dall'anno nell'elenco atleti.</p>`;
-    const f=FORMATS[tutti]; $("fmtNote").innerHTML=`<span>${(f.desc||"").replace(/</g,"&lt;")}</span><div class="rotprev">${rotPreview(day,tutti)}</div>`;
+    const f=FORMATS[tutti]; if($("rotName")) $("rotName").textContent=(tutti===day?"quella del programma":f.nome)+(e?" · giovani: "+(FORMATS[fId(e.giovani)]||{nome:""}).nome:"");
+    $("fmtNote").innerHTML=`<span>${(f.desc||"").replace(/</g,"&lt;")}</span><div class="rotprev">${rotPreview(day,tutti)}</div>`;
     const dr=$("draftBar"); if(dr) dr.hidden=!(fmtDraft&&fmtDraft.d===day) && !edDirty;
   }
   function fmtChanged(){ const d=day, tutti=$("fmtSel").value; let val=tutti;
