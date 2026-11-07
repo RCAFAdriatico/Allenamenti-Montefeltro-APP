@@ -84,6 +84,7 @@ tr.regp{cursor:pointer}.onep{display:grid;gap:2px;padding:4px 0 8px}.onep div{di
 .regchk{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}.regchk label{display:flex;align-items:center;gap:6px;font-size:15px}
 .late{margin-top:10px}.late summary{cursor:pointer;color:var(--muted);font-size:14px;text-decoration:underline}
 #testTab{overflow-x:auto;max-width:100%}
+.tt3 .rn{font-weight:700;min-width:26px;color:var(--muted)}
 #testTab td.yrow{background:var(--bg);font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding-top:10px}
 .testform .tt3{display:flex!important;flex-direction:row;align-items:center;gap:6px;flex-wrap:nowrap}.tt3 span{font-weight:600;margin-right:4px}.testform .tt3 b,.testform .tt3 span{display:inline;width:auto}.testform .tt3 input{width:52px!important;flex:0 0 52px;margin:0;text-align:center;font-size:18px;padding:8px 4px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}.tt3 b{font-weight:500;color:var(--muted);font-size:14px;margin-right:6px}
 .fmtbox{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}.fmtchk{display:flex;align-items:center;gap:8px;margin-top:8px;font-weight:500;text-transform:none;letter-spacing:0}.fmtbox select{width:100%;min-width:0;max-width:100%}.fmtg{display:grid;grid-template-columns:60px minmax(0,1fr);align-items:center;gap:8px;margin-top:6px}
@@ -436,7 +437,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <div id="persTest"></div>
     <div class="row"><button type="button" class="btn sec" id="persClose">Chiudi</button></div>
   </div></dialog>
-  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 07/11/2026 13:52</p>
+  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 07/11/2026 13:57</p>
   <details class="coach" id="reg" hidden>
     <summary>Registro presenze</summary>
     <div class="field"><label for="regDate">Giorno</label><input type="date" id="regDate" style="font:inherit;border:1.5px solid var(--line);border-radius:8px;padding:6px;background:var(--bg);color:var(--ink)"></div>
@@ -978,7 +979,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     $("pdfMsg").textContent=ok===1?"Scheda caricata.":ok+" schede caricate."; });
 
   // ---------- Test (500, 1000, 1500, 2000 remo · 4000 bike) ----------
-  const TESTS=[["r500","500 m remo",500],["r1000","1000 m remo",1000],["r1500","1500 m remo",1500],["r2000","2000 m remo",2000],["r6000","6000 m remo",6000],["b4000","4000 m bike",4000]];
+  const TESTS=[["r500","500 m remo",500],["r1000","1000 m remo",1000],["r1500","1500 m remo",1500],["r2000","2000 m remo",2000],["r6000","6000 m remo",6000],["r4x4000","4 × 4000 m remo",4000,4],["r3x750","3 × 750 m remo",750,3],["b4000","4000 m bike",4000]];
+  const tReps=k=>((TESTS.find(t=>t[0]===k)||[])[3])||1;
   const tName=k=>(TESTS.find(t=>t[0]===k)||[k,k])[1];
   const tDist=k=>(TESTS.find(t=>t[0]===k)||[0,0,0])[2];
   function parseT(v){ v=String(v||"").trim().replace(",","."); if(!v) return null; let m=/^(\d+):(\d{1,2}(?:\.\d+)?)$/.exec(v); if(m) return +m[1]*60+ +m[2]; m=/^(\d+(?:\.\d+)?)$/.exec(v); return m?+m[1]:null; }
@@ -987,19 +989,26 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   const dIt=d=>{ const [y,m,g]=String(d||"").split("-"); return g?g+"/"+m+"/"+y.slice(2):d; };
   function bestOf(list,k){ let b=null; (list||[]).forEach(r=>{ if(r.tipo===k && r.sec>0 && (!b||r.sec<b.sec)) b=r; }); return b; }
   function testForm(onSave){ const f=document.createElement("div"); f.className="testform";
-    f.innerHTML=`<select class="tk">${TESTS.map(t=>`<option value="${t[0]}">${t[1]}</option>`).join("")}</select><input class="td" type="date"><div class="tt3 full"><input class="tm" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="7"><b>min</b><input class="ts" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="05"><b>sec</b><input class="tdc" inputmode="numeric" pattern="[0-9]*" maxlength="1" placeholder="3"><b>dec.</b></div><input class="tn full" placeholder="Note (facoltative)"><button type="button" class="btn sm full">Salva test</button><div class="status full"></div>`;
+    const row=n=>`<div class="tt3 full" data-r="${n}">${n?`<span class="rn">${n}ª</span>`:""}<input class="tm" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="7"><b>min</b><input class="ts" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="05"><b>sec</b><input class="tdc" inputmode="numeric" pattern="[0-9]*" maxlength="1" placeholder="3"><b>dec.</b></div>`;
+    f.innerHTML=`<select class="tk">${TESTS.map(t=>`<option value="${t[0]}">${t[1]}</option>`).join("")}</select><input class="td" type="date"><div class="tts full"></div><input class="tn full" placeholder="Note (facoltative)"><button type="button" class="btn sm full">Salva test</button><div class="status full"></div>`;
     f.querySelector(".td").value=today();
-    const q=c=>f.querySelector(c); q(".tm").oninput=()=>{ if(q(".tm").value.length>=2) q(".ts").focus(); }; q(".ts").oninput=()=>{ if(q(".ts").value.length>=2) q(".tdc").focus(); };
-    f.querySelector("button").onclick=async()=>{ const st=f.querySelector(".status"); const mi=parseInt(q(".tm").value||"0",10), se=parseInt(q(".ts").value||"0",10), de=parseInt(q(".tdc").value||"0",10);
-      const sec=(isNaN(mi)||isNaN(se)||isNaN(de)||se>59)?null:mi*60+se+de/10;
-      if(!sec){ st.textContent="Scrivi minuti, secondi e decimi, es. 7 min 05 sec 3 dec."; return; }
-      try{ await onSave({id:"t"+Date.now().toString(36),tipo:f.querySelector(".tk").value,data:f.querySelector(".td").value||today(),sec:Math.round(sec*10)/10,note:f.querySelector(".tn").value.trim(),creato:Date.now()}); st.textContent="Test salvato."; q(".tm").value=""; q(".ts").value=""; q(".tdc").value=""; f.querySelector(".tn").value=""; }
+    const draw=()=>{ const n=tReps(f.querySelector(".tk").value); const W=f.querySelector(".tts");
+      W.innerHTML=(n>1?`<p class="note" style="margin:0 0 4px">Scrivi il tempo di ogni ripetizione: l'app calcola la media.</p>`:"")+(n>1?Array.from({length:n},(_,i)=>row(i+1)).join(""):row(0));
+      W.querySelectorAll(".tt3").forEach(r=>{ const a=r.querySelector(".tm"), b=r.querySelector(".ts"), c=r.querySelector(".tdc"); a.oninput=()=>{ if(a.value.length>=2) b.focus(); }; b.oninput=()=>{ if(b.value.length>=2) c.focus(); }; }); };
+    f.querySelector(".tk").onchange=draw; draw();
+    f.querySelector("button").onclick=async()=>{ const st=f.querySelector(".status"); const k=f.querySelector(".tk").value;
+      const times=[...f.querySelectorAll(".tts .tt3")].map(r=>{ const mi=parseInt(r.querySelector(".tm").value||"0",10), se=parseInt(r.querySelector(".ts").value||"0",10), de=parseInt(r.querySelector(".tdc").value||"0",10); return (isNaN(mi)||isNaN(se)||isNaN(de)||se>59)?null:mi*60+se+de/10; });
+      if(times.some(t=>!t)){ st.textContent=times.length>1?"Scrivi il tempo di tutte le ripetizioni (minuti, secondi, decimi).":"Scrivi minuti, secondi e decimi, es. 7 min 05 sec 3 dec."; return; }
+      const sec=times.reduce((a,b)=>a+b,0)/times.length; let note=f.querySelector(".tn").value.trim();
+      const rec={id:"t"+Date.now().toString(36),tipo:k,data:f.querySelector(".td").value||today(),sec:Math.round(sec*10)/10,note,creato:Date.now()};
+      if(times.length>1){ rec.parz=times.map(t=>Math.round(t*10)/10); rec.note=("Ripetizioni: "+rec.parz.map(fmtT).join(" · ")+(note?" · "+note:"")); }
+      try{ await onSave(rec); st.textContent="Test salvato."+(times.length>1?" Media "+fmtT(rec.sec)+".":""); draw(); f.querySelector(".tn").value=""; }
       catch(e){ st.textContent="Non salvato: "+(e.message||e); } };
     return f; }
   function testList(list,onDel){ const box=document.createElement("div");
     const g=document.createElement("div"); g.className="tbest";
     TESTS.forEach(([k,l])=>{ const b=bestOf(list,k); const d=document.createElement("div"); d.innerHTML=`<small></small><b></b><small></small>`; const sm=d.querySelectorAll("small");
-      sm[0].textContent=l; d.querySelector("b").textContent=b?fmtT(b.sec):"—"; sm[1].textContent=b?("passo "+split(k,b.sec)+"/500 · "+dIt(b.data)):"nessun test"; g.appendChild(d); });
+      sm[0].textContent=l+(tReps(k)>1?" · media":""); d.querySelector("b").textContent=b?fmtT(b.sec):"—"; sm[1].textContent=b?("passo "+split(k,b.sec)+"/500 · "+dIt(b.data)):"nessun test"; g.appendChild(d); });
     box.appendChild(g);
     TESTS.forEach(([k,l])=>{ const rows=(list||[]).filter(r=>r.tipo===k).sort((a,b)=>(a.data||"").localeCompare(b.data||"")||(a.creato||0)-(b.creato||0)); if(!rows.length) return;
       const h=document.createElement("p"); h.className="label"; h.style.marginTop="12px"; h.textContent="Cronologia · "+l; box.appendChild(h);
@@ -1007,7 +1016,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       const pb=bestOf(list,k);
       rows.slice().reverse().forEach((r,i,arr)=>{ const prev=arr[i+1]; const tr=document.createElement("tr");
         const diff=prev?(r.sec-prev.sec):null; const ds=diff==null?"":(diff<0?"−"+Math.abs(diff).toFixed(1)+"\"":"+"+diff.toFixed(1)+"\"");
-        [dIt(r.data),fmtT(r.sec),split(k,r.sec),ds].forEach((v,j)=>{ const td=document.createElement("td"); if(j>0) td.className="n"; if(j===1&&pb&&pb.id===r.id) td.className="n pb"; if(j===3&&diff!=null) td.style.color=diff<0?"var(--rest)":"var(--red)"; td.textContent=v; if(j===0&&r.note) td.title=r.note; tr.appendChild(td); });
+        [dIt(r.data),fmtT(r.sec),split(k,r.sec),ds].forEach((v,j)=>{ const td=document.createElement("td"); if(j>0) td.className="n"; if(j===1&&pb&&pb.id===r.id) td.className="n pb"; if(j===3&&diff!=null) td.style.color=diff<0?"var(--rest)":"var(--red)"; td.textContent=v; if(j===0&&r.note) td.title=r.note; if(j===1&&r.parz){ const sm=document.createElement("small"); sm.style.cssText="display:block;color:var(--muted);font-weight:400"; sm.textContent=r.parz.map(fmtT).join(" · "); td.appendChild(sm); } tr.appendChild(td); });
         const td=document.createElement("td"); if(onDel){ const x=document.createElement("button"); x.type="button"; x.className="edb"; x.textContent="✕"; x.setAttribute("aria-label","Elimina test"); x.onclick=()=>onDel(r.id); td.appendChild(x); } tr.appendChild(td);
         t.tBodies[0].appendChild(tr);
         if(r.note){ const nr=document.createElement("tr"); const nd=document.createElement("td"); nd.colSpan=5; nd.className="note"; nd.style.borderTop="0"; nd.textContent="↳ "+r.note; nr.appendChild(nd); t.tBodies[0].appendChild(nr); } });
@@ -1087,7 +1096,7 @@ Viola; 2013; 4:17.3; 29; 2026-10-16`;
     if(!coach) return; const T=$("testTab"); T.innerHTML="";
     const users=[...new Set(roster.map(r=>r.username).concat(Object.keys(allTests)))].filter(u=>(allTests[u]||[]).length);
     if(!users.length){ T.innerHTML=`<p class="note">Ancora nessun test inserito.</p>`; return; }
-    const t=document.createElement("table"); t.className="tbl"; t.innerHTML="<thead><tr><th>Atleta</th>"+TESTS.map(x=>`<th class='n'>${x[1].replace(" remo","").replace(" bike"," bike")}</th>`).join("")+"</tr></thead><tbody></tbody>";
+    const t=document.createElement("table"); t.className="tbl"; t.innerHTML="<thead><tr><th>Atleta</th>"+TESTS.map(x=>`<th class='n'>${x[1].replace(" remo","").replace(" bike"," bike")}${x[3]?" (media)":""}</th>`).join("")+"</tr></thead><tbody></tbody>";
     const recOf=u=>roster.find(x=>x.username===u); const annoOf=u=>{ const r=recOf(u); return (r&&+r.anno)||9999; };
     const CATS2=["Maschi 2008–2012","Femmine 2008–2012","Under 14 · 2013–2014","Altri"];
     const catOf=u=>{ const y=annoOf(u); if(y>=2013&&y<=2014) return 2; if(y>=2008&&y<=2012) return sexOf(recOf(u))==="F"?1:0; return 3; };
