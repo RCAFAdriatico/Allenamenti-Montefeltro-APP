@@ -80,6 +80,7 @@ ol.seq li .d small{display:block;color:var(--muted);font-size:13px}
 ol.seq li.k-remo .d b{color:var(--remo)}
 ol.seq li.k-recupero .d b,ol.seq li.k-chiusura .d b{color:var(--muted);font-weight:500}
 ol.seq li.cur{background:var(--red-soft)}
+.regchk{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}.regchk label{display:flex;align-items:center;gap:6px;font-size:15px}
 .late{margin-top:10px}.late summary{cursor:pointer;color:var(--muted);font-size:14px;text-decoration:underline}
 #testTab{overflow-x:auto;max-width:100%}
 #testTab td.yrow{background:var(--bg);font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding-top:10px}
@@ -826,7 +827,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     const D=$("regDay"); D.innerHTML="";
     if(!pres.length){ D.innerHTML=`<p class="note">Nessuna presenza segnata in questo giorno.</p>`; }
     else { const t=document.createElement("table"); t.className="tbl"; t.innerHTML=`<thead><tr><th>Atleta</th><th>Gruppo</th><th>Ora</th><th></th></tr></thead><tbody></tbody>`;
-      pres.forEach(p=>{ const r=p.giorni[dk], h=new Date(r.ora); const tr=document.createElement("tr"); [name(p.id),(r.gruppo?"G"+r.gruppo:([2,4].includes(new Date(dk+"T12:00:00").getDay())?"Pesi":"—")),r.dopo?"aggiunta dopo":pad(h.getHours())+":"+pad(h.getMinutes())].forEach(v=>{const td=document.createElement("td"); td.textContent=v; tr.appendChild(td);});
+      pres.forEach(p=>{ const r=p.giorni[dk], h=new Date(r.ora); const tr=document.createElement("tr"); [name(p.id),(r.gruppo?"G"+r.gruppo:([2,4].includes(new Date(dk+"T12:00:00").getDay())?"Pesi":"—")),r.gara?"🏁 in gara":r.dopo?"aggiunta dopo":pad(h.getHours())+":"+pad(h.getMinutes())].forEach(v=>{const td=document.createElement("td"); td.textContent=v; tr.appendChild(td);});
         const xd=document.createElement("td"); const xb=document.createElement("button"); xb.type="button"; xb.className="edb"; xb.textContent="✕"; xb.title="Togli presenza";
         xb.onclick=async()=>{ if(!xb.dataset.ok){ xb.dataset.ok="1"; xb.textContent="Togli?"; setTimeout(()=>{ xb.dataset.ok=""; xb.textContent="✕"; },3000); return; }
           try{ const ref=db.doc("presenze/"+p.id); const sn=await ref.get(); const dd=sn.data()||{}; const g=Object.assign({},dd.giorni||{}); delete g[dk]; await ref.set(Object.assign({},dd,{giorni:g})); }catch(e){ xb.textContent="!"; } };
@@ -834,23 +835,26 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       D.appendChild(t); const tot=document.createElement("p"); tot.className="note"; tot.textContent=pres.length+" presenti"; D.appendChild(tot); }
     { const presU=new Set(pres.map(p=>(recOf(p)||{}).username||p.id)); const k={1:"lun",2:"mar",3:"mer",4:"gio",5:"ven",6:"sab"}[new Date(dk+"T12:00:00").getDay()];
       const cand=roster.filter(r=>!presU.has(r.username)&&k&&!offFor(r,k,dk)).sort((a,b)=>(a.nome||"").localeCompare(b.nome||""));
-      if(cand.length&&dk<=today()){ const w=document.createElement("div"); w.className="row"; w.style.marginTop="6px";
-        w.innerHTML=`<select class="pl" id="regAddSel">${cand.map(r=>`<option value="${r.username}">${(r.nome||r.username).replace(/</g,"&lt;")}</option>`).join("")}</select><button class="btn sec" id="regAddBtn">＋ Aggiungi presenza</button>`; D.appendChild(w);
-        $("regAddBtn").onclick=async()=>{ const u=$("regAddSel").value, ref=db.doc("presenze/"+u), rec={gruppo:0,ora:Date.now(),dopo:true};
-          try{ const sn=await ref.get(); if(sn.exists) await ref.update({atleta:u,giorni:{[dk]:rec}}); else await ref.set({atleta:u,giorni:{[dk]:rec}}); }catch(e){ $("regAddBtn").textContent="Non salvato"; } }; } }
+      if(cand.length&&dk<=today()){ const w=document.createElement("div"); w.className="regadd";
+        w.innerHTML=`<p class="note" style="margin:8px 0 4px">Assenti in questo giorno: spunta e scegli.</p><div class="regchk">${cand.map(r=>`<label><input type="checkbox" value="${r.username}"> ${(r.nome||r.username).replace(/</g,"&lt;")}</label>`).join("")}</div>
+          <div class="row" style="margin-top:6px"><button class="btn sec" id="regAddBtn">＋ Presenti</button><button class="btn sec" id="regGaraBtn">🏁 In gara</button></div>`; D.appendChild(w);
+        const mark=async gara=>{ const us=[...w.querySelectorAll("input:checked")].map(x=>x.value); if(!us.length) return;
+          for(const u of us){ const ref=db.doc("presenze/"+u), rec=gara?{gruppo:0,ora:Date.now(),gara:true}:{gruppo:0,ora:Date.now(),dopo:true};
+            try{ const sn=await ref.get(); if(sn.exists) await ref.update({atleta:u,giorni:{[dk]:rec}}); else await ref.set({atleta:u,giorni:{[dk]:rec}}); }catch(e){} } };
+        $("regAddBtn").onclick=()=>mark(false); $("regGaraBtn").onclick=()=>mark(true); } }
     const T=today(), st=regStart; $("regStart").value=st;
     const people=new Map();
     roster.forEach(r=>people.set("u:"+r.username,{nome:r.nome,rec:r,days:new Set()}));
     allPres.forEach(p=>{ const r=recOf(p); const key=r?"u:"+r.username:"id:"+p.id; if(!people.has(key)) people.set(key,{nome:name(p.id),rec:r,days:new Set()});
-      Object.keys(p.giorni).forEach(k=>{ if(k>=st && k<=T) people.get(key).days.add(k); }); });
-    const rows=[...people.values()].map(x=>{ const S=sessionsSince(x.rec,st,T); const c=x.days.size; return {nome:x.nome,c,S,p:S?Math.min(100,Math.round(c/S*100)):0}; }).sort((a,b)=>b.p-a.p||a.nome.localeCompare(b.nome));
+      Object.keys(p.giorni).forEach(k=>{ if(k>=st && k<=T){ people.get(key).days.add(k); if(p.giorni[k]&&p.giorni[k].gara) (people.get(key).gare=people.get(key).gare||new Set()).add(k); } }); });
+    const rows=[...people.values()].map(x=>{ const S=sessionsSince(x.rec,st,T); const c=x.days.size; return {nome:x.nome,c,S,g:x.gare?x.gare.size:0,p:S?Math.min(100,Math.round(c/S*100)):0}; }).sort((a,b)=>b.p-a.p||a.nome.localeCompare(b.nome));
     const M=$("regMonth"); M.innerHTML="";
     if(st>T){ M.innerHTML=`<p class="note">La data di inizio è nel futuro.</p>`; return; }
     if(!rows.length){ M.innerHTML=`<p class="note">Ancora nessun atleta né presenza.</p>`; return; }
     const t=document.createElement("table"); t.className="tbl"; t.innerHTML=`<thead><tr><th>Atleta</th><th class="n">Presenze</th><th class="n">%</th></tr></thead><tbody></tbody>`;
-    rows.forEach(r=>{ const tr=document.createElement("tr"); const a=document.createElement("td"); a.textContent=r.nome; const b=document.createElement("td"); b.className="n"; b.textContent=r.c+" / "+r.S; const c=document.createElement("td"); c.className="n"; c.textContent=r.S?r.p+"%":"—"; tr.append(a,b,c); t.tBodies[0].appendChild(tr); });
+    rows.forEach(r=>{ const tr=document.createElement("tr"); const a=document.createElement("td"); a.textContent=r.nome; const b=document.createElement("td"); b.className="n"; b.textContent=r.c+" / "+r.S+(r.g?" (🏁"+r.g+")":""); const c=document.createElement("td"); c.className="n"; c.textContent=r.S?r.p+"%":"—"; tr.append(a,b,c); t.tBodies[0].appendChild(tr); });
     M.appendChild(t); const nt=document.createElement("p"); nt.className="note";
-    const [y,m,d]=st.split("-"); nt.textContent="Conteggio progressivo dal "+d+"/"+m+"/"+y+" a oggi. Sedute previste secondo il numero assegnato a ciascuno (6 o 4 a settimana), tenendo conto della data dei cambi."; M.appendChild(nt);
+    const [y,m,d]=st.split("-"); nt.textContent="Conteggio progressivo dal "+d+"/"+m+"/"+y+" a oggi. Sedute previste secondo il numero assegnato a ciascuno (6 o 4 a settimana), tenendo conto della data dei cambi. Le gare (🏁) contano come presenze."; M.appendChild(nt);
   }
   $("regDate").addEventListener("change",renderReg);
   $("regStart").addEventListener("change",async()=>{ const v=$("regStart").value; if(!v) return; regStart=v; renderReg(); try{ await db.doc("config/registro").set({inizio:v}); }catch(e){} });
