@@ -437,7 +437,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <div id="persTest"></div>
     <div class="row"><button type="button" class="btn sec" id="persClose">Chiudi</button></div>
   </div></dialog>
-  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 07/11/2026 13:57</p>
+  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 07/11/2026 14:00</p>
   <details class="coach" id="reg" hidden>
     <summary>Registro presenze</summary>
     <div class="field"><label for="regDate">Giorno</label><input type="date" id="regDate" style="font:inherit;border:1.5px solid var(--line);border-radius:8px;padding:6px;background:var(--bg);color:var(--ink)"></div>
@@ -894,7 +894,11 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       const h=document.createElement("h3"); h.textContent=a.titolo||"Senza titolo"; c.appendChild(h);
       if(a.testo){ const t=document.createElement("div"); t.className="txt"; t.textContent=a.testo; c.appendChild(t); }
       const ex=(a.esercizi||[]).filter(Boolean); if(ex.length){ const ol=document.createElement("ol"); ol.className="exs"; ex.forEach(x=>ol.appendChild(exLi(x))); c.appendChild(ol); }
-      if(coach){ const r=document.createElement("div"); r.className="row"; const e=document.createElement("button"); e.type="button"; e.className="btn sec sm"; e.textContent="Modifica"; e.onclick=()=>openAlt(a); r.appendChild(e); c.appendChild(r); }
+      if(coach){ const r=document.createElement("div"); r.className="row"; const e=document.createElement("button"); e.type="button"; e.className="btn sec sm"; e.textContent="Modifica"; e.onclick=()=>openAlt(a); r.appendChild(e);
+        const x=document.createElement("button"); x.type="button"; x.className="btn sec sm"; x.style.color="var(--red)"; x.textContent="🗑 Elimina";
+        x.onclick=async()=>{ if(!x.dataset.ok){ x.dataset.ok="1"; x.textContent="Tocca ancora per eliminare"; setTimeout(()=>{ x.dataset.ok=""; x.textContent="🗑 Elimina"; },3000); return; }
+          x.disabled=true; try{ await db.doc("allenamenti/"+a.id).delete(); }catch(err){ x.disabled=false; x.textContent="Non eliminato"; } };
+        r.appendChild(x); c.appendChild(r); }
       L.appendChild(c); });
   }
   $("altCats").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; altCat= altCat===b.dataset.c?null:b.dataset.c; renderAlt(); });
