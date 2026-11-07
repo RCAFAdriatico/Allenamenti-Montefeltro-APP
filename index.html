@@ -437,7 +437,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <div id="persTest"></div>
     <div class="row"><button type="button" class="btn sec" id="persClose">Chiudi</button></div>
   </div></dialog>
-  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 07/11/2026 14:01</p>
+  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 07/11/2026 14:06</p>
   <details class="coach" id="reg" hidden>
     <summary>Registro presenze</summary>
     <div class="field"><label for="regDate">Giorno</label><input type="date" id="regDate" style="font:inherit;border:1.5px solid var(--line);border-radius:8px;padding:6px;background:var(--bg);color:var(--ink)"></div>
@@ -663,9 +663,10 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
         f.append(lb,ta,hint); box.appendChild(f);
         // libreria allenamenti remoergometro
         const lr=document.createElement("div"); lr.className="remolib";
-        const remos=alt.filter(a=>a.cat==="remo").sort((a,b)=>(a.titolo||"").localeCompare(b.titolo||"","it",{numeric:true}));
-        const sel=document.createElement("select"); sel.className="addsel"; sel.innerHTML=`<option value="">📚 Prendi dalla libreria remo${remos.length?" ("+remos.length+")":" (vuota)"}…</option>`+remos.map(a=>`<option value="${a.id}">${(a.titolo||"").replace(/</g,"&lt;")}</option>`).join("");
-        sel.onchange=()=>{ const a=alt.find(x=>x.id===sel.value); sel.value=""; if(!a) return; const add=[a.titolo?"— "+a.titolo+" —":"",a.testo||""].filter(Boolean).join("\n");
+        const lcat=/^S\d/.test(k)?"pesi":"remo";
+        const remos=alt.filter(a=>a.cat===lcat).sort((a,b)=>(a.titolo||"").localeCompare(b.titolo||"","it",{numeric:true}));
+        const sel=document.createElement("select"); sel.className="addsel"; sel.innerHTML=`<option value="">📚 Prendi dalla libreria ${lcat}${remos.length?" ("+remos.length+")":" (vuota)"}…</option>`+remos.map(a=>`<option value="${a.id}">${(a.titolo||"").replace(/</g,"&lt;")}</option>`).join("");
+        sel.onchange=()=>{ const a=alt.find(x=>x.id===sel.value); sel.value=""; if(!a) return; const add=[a.titolo?"— "+a.titolo+" —":"",a.testo||""].concat((a.esercizi||[]).filter(Boolean)).filter(Boolean).join("\n");
           ta.value=(ta.value.trim()?ta.value.replace(/\s+$/,"")+"\n":"")+add; ta.dispatchEvent(new Event("input")); };
         const sv=document.createElement("button"); sv.type="button"; sv.className="linkbtn"; sv.textContent="Salva questo lavoro nella libreria remo";
         sv.onclick=()=>{ const row=document.createElement("div"); row.className="row"; const ti=document.createElement("input"); ti.className="uinput"; ti.placeholder="Nome del lavoro (es. 5×8' fondo 22)";
@@ -697,7 +698,10 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       const b1=document.createElement("button"); b1.type="button"; b1.className="btn sm"; b1.textContent="＋ Scegli dalle immagini"; b1.onclick=()=>openPick(k,l);
       const b2=document.createElement("button"); b2.type="button"; b2.className="btn sec sm"; b2.textContent="＋ Riga scritta";
       b2.onclick=()=>{ (edItems[k]=edItems[k]||[]).push({t:"free",txt:""}); edDirty=true; renderEditor(false); const ins=box.parentNode&&$("editor").querySelectorAll(".isola-ed")[edKeysFor(day).findIndex(x=>x[0]===k)].querySelectorAll(".edrow input"); if(ins&&ins.length) ins[ins.length-1].focus(); };
-      btns.append(b1,b2); box.appendChild(btns);
+      const cl=alt.filter(a=>a.cat==="circuito"||a.cat==="pesi").sort((a,b)=>(a.titolo||"").localeCompare(b.titolo||"","it",{numeric:true}));
+      const cs=document.createElement("select"); cs.className="addsel"; cs.style.marginTop="8px"; cs.innerHTML=`<option value="">📚 Prendi dalla libreria circuiti${cl.length?" ("+cl.length+")":" (vuota)"}…</option>`+cl.map(a=>`<option value="${a.id}">${(a.cat==="pesi"?"[Pesi] ":"")+(a.titolo||"").replace(/</g,"&lt;")}</option>`).join("");
+      cs.onchange=()=>{ const a=alt.find(x=>x.id===cs.value); cs.value=""; if(!a) return; edItems[k]=(a.esercizi||[]).filter(Boolean).map(parseLine); edNote[k]=(a.testo||"").split("\n").filter(Boolean).join(" · "); edDirty=true; renderEditor(false); };
+      btns.append(b1,b2); box.appendChild(btns); box.appendChild(cs);
       const nf=document.createElement("div"); nf.className="field"; const nl=document.createElement("label"); nl.textContent="Note"; const ni=document.createElement("input"); ni.className="pl"; ni.value=edNote[k]||""; ni.oninput=()=>{ edNote[k]=ni.value; edDirty=true; };
       nf.append(nl,ni); box.appendChild(nf); edGr[k]=edGr[k]||{}; box.appendChild(groupFields(edGr[k],()=>{edDirty=true;})); ed.appendChild(box); });
   }
@@ -723,7 +727,11 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     const br=document.createElement("div"); br.className="row"; br.style.marginTop="8px";
     const b1=document.createElement("button"); b1.type="button"; b1.className="btn sm"; b1.textContent="＋ Scegli dalle immagini"; b1.onclick=()=>{ pickK="__extra"; $("pickTit").textContent=edExtra.titolo||"Allenamento in aggiunta"; $("pickQ").value=""; renderPick(); const d=$("pick"); if(d.showModal) d.showModal(); else d.setAttribute("open",""); };
     const b2=document.createElement("button"); b2.type="button"; b2.className="btn sec sm"; b2.textContent="Svuota"; b2.onclick=()=>{ edExtra={titolo:"",testo:"",esercizi:[],gruppi:{}}; edDirty=true; renderExtraEd(); };
-    br.append(b1,b2); edExtra.gruppi=edExtra.gruppi||{}; X.append(h,p,f1,f2,groupFields(edExtra.gruppi,()=>{edDirty=true;}),list,br);
+    br.append(b1,b2); edExtra.gruppi=edExtra.gruppi||{};
+    const all=alt.slice().sort((a,b)=>(a.cat||"").localeCompare(b.cat||"")||(a.titolo||"").localeCompare(b.titolo||"","it",{numeric:true}));
+    const xs=document.createElement("select"); xs.className="addsel"; xs.innerHTML=`<option value="">📚 Prendi dalla libreria…</option>`+ALTCATS.map(([c,l])=>{ const its=all.filter(a=>a.cat===c); return its.length?`<optgroup label="${l}">`+its.map(a=>`<option value="${a.id}">${(a.titolo||"").replace(/</g,"&lt;")}</option>`).join("")+`</optgroup>`:""; }).join("");
+    xs.onchange=()=>{ const a=alt.find(x=>x.id===xs.value); xs.value=""; if(!a) return; edExtra={titolo:a.titolo||"",testo:a.testo||"",esercizi:(a.esercizi||[]).filter(Boolean).map(parseLine),gruppi:{}}; edDirty=true; renderExtraEd(); };
+    X.append(h,p,xs,f1,f2,groupFields(edExtra.gruppi,()=>{edDirty=true;}),list,br);
   }
   function openPick(k,l){ pickK=k; $("pickTit").textContent=l; $("pickQ").value=""; renderPick(); const d=$("pick"); if(d.showModal) d.showModal(); else d.setAttribute("open",""); }
   function renderPick(){
