@@ -436,7 +436,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <div id="persTest"></div>
     <div class="row"><button type="button" class="btn sec" id="persClose">Chiudi</button></div>
   </div></dialog>
-  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 07/11/2026 13:29</p>
+  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 07/11/2026 13:31</p>
   <details class="coach" id="reg" hidden>
     <summary>Registro presenze</summary>
     <div class="field"><label for="regDate">Giorno</label><input type="date" id="regDate" style="font:inherit;border:1.5px solid var(--line);border-radius:8px;padding:6px;background:var(--bg);color:var(--ink)"></div>
@@ -848,7 +848,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     roster.forEach(r=>people.set("u:"+r.username,{nome:r.nome,rec:r,days:new Set(),info:{}}));
     allPres.forEach(p=>{ const r=recOf(p); const key=r?"u:"+r.username:"id:"+p.id; if(!people.has(key)) people.set(key,{nome:name(p.id),rec:r,days:new Set(),info:{}});
       Object.keys(p.giorni).forEach(k=>{ if(k>=st && k<=T){ people.get(key).days.add(k); people.get(key).info[k]=p.giorni[k]; if(p.giorni[k]&&p.giorni[k].gara) (people.get(key).gare=people.get(key).gare||new Set()).add(k); } }); });
-    const rows=[...people.values()].map(x=>{ const S=sessionsSince(x.rec,st,T); const c=x.days.size; return {nome:x.nome,rec:x.rec,info:x.info,c,S,g:x.gare?x.gare.size:0,p:S?Math.min(100,Math.round(c/S*100)):0}; }).sort((a,b)=>b.p-a.p||a.nome.localeCompare(b.nome));
+    const rows=[...people.values()].map(x=>{ const S=sessionsSince(x.rec,st,T); const c=x.days.size; return {nome:x.nome,rec:x.rec,info:x.info,c,S,g:x.gare?x.gare.size:0,p:S?Math.min(100,Math.round(c/S*100)):0}; }).filter(x=>x.rec||x.c>0).sort((a,b)=>b.p-a.p||a.nome.localeCompare(b.nome));
     const M=$("regMonth"); M.innerHTML="";
     if(st>T){ M.innerHTML=`<p class="note">La data di inizio è nel futuro.</p>`; return; }
     if(!rows.length){ M.innerHTML=`<p class="note">Ancora nessun atleta né presenza.</p>`; return; }
