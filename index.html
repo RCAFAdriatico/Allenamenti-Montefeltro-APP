@@ -80,6 +80,7 @@ ol.seq li .d small{display:block;color:var(--muted);font-size:13px}
 ol.seq li.k-remo .d b{color:var(--remo)}
 ol.seq li.k-recupero .d b,ol.seq li.k-chiusura .d b{color:var(--muted);font-weight:500}
 ol.seq li.cur{background:var(--red-soft)}
+tr.regp{cursor:pointer}.onep{display:grid;gap:2px;padding:4px 0 8px}.onep div{display:flex;justify-content:space-between;font-size:14px;padding:3px 8px;border-radius:6px;background:var(--bg)}.onep .no b{color:var(--red)}.onep .ok b{color:#1b8a4a}.onep .g b{color:var(--remo)}
 .regchk{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}.regchk label{display:flex;align-items:center;gap:6px;font-size:15px}
 .late{margin-top:10px}.late summary{cursor:pointer;color:var(--muted);font-size:14px;text-decoration:underline}
 #testTab{overflow-x:auto;max-width:100%}
@@ -844,18 +845,26 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
         $("regAddBtn").onclick=()=>mark(false); $("regGaraBtn").onclick=()=>mark(true); } }
     const T=today(), st=regStart; $("regStart").value=st;
     const people=new Map();
-    roster.forEach(r=>people.set("u:"+r.username,{nome:r.nome,rec:r,days:new Set()}));
-    allPres.forEach(p=>{ const r=recOf(p); const key=r?"u:"+r.username:"id:"+p.id; if(!people.has(key)) people.set(key,{nome:name(p.id),rec:r,days:new Set()});
-      Object.keys(p.giorni).forEach(k=>{ if(k>=st && k<=T){ people.get(key).days.add(k); if(p.giorni[k]&&p.giorni[k].gara) (people.get(key).gare=people.get(key).gare||new Set()).add(k); } }); });
-    const rows=[...people.values()].map(x=>{ const S=sessionsSince(x.rec,st,T); const c=x.days.size; return {nome:x.nome,c,S,g:x.gare?x.gare.size:0,p:S?Math.min(100,Math.round(c/S*100)):0}; }).sort((a,b)=>b.p-a.p||a.nome.localeCompare(b.nome));
+    roster.forEach(r=>people.set("u:"+r.username,{nome:r.nome,rec:r,days:new Set(),info:{}}));
+    allPres.forEach(p=>{ const r=recOf(p); const key=r?"u:"+r.username:"id:"+p.id; if(!people.has(key)) people.set(key,{nome:name(p.id),rec:r,days:new Set(),info:{}});
+      Object.keys(p.giorni).forEach(k=>{ if(k>=st && k<=T){ people.get(key).days.add(k); people.get(key).info[k]=p.giorni[k]; if(p.giorni[k]&&p.giorni[k].gara) (people.get(key).gare=people.get(key).gare||new Set()).add(k); } }); });
+    const rows=[...people.values()].map(x=>{ const S=sessionsSince(x.rec,st,T); const c=x.days.size; return {nome:x.nome,rec:x.rec,info:x.info,c,S,g:x.gare?x.gare.size:0,p:S?Math.min(100,Math.round(c/S*100)):0}; }).sort((a,b)=>b.p-a.p||a.nome.localeCompare(b.nome));
     const M=$("regMonth"); M.innerHTML="";
     if(st>T){ M.innerHTML=`<p class="note">La data di inizio è nel futuro.</p>`; return; }
     if(!rows.length){ M.innerHTML=`<p class="note">Ancora nessun atleta né presenza.</p>`; return; }
     const t=document.createElement("table"); t.className="tbl"; t.innerHTML=`<thead><tr><th>Atleta</th><th class="n">Presenze</th><th class="n">%</th></tr></thead><tbody></tbody>`;
-    rows.forEach(r=>{ const tr=document.createElement("tr"); const a=document.createElement("td"); a.textContent=r.nome; const b=document.createElement("td"); b.className="n"; b.textContent=r.c+" / "+r.S+(r.g?" (🏁"+r.g+")":""); const c=document.createElement("td"); c.className="n"; c.textContent=r.S?r.p+"%":"—"; tr.append(a,b,c); t.tBodies[0].appendChild(tr); });
+    rows.forEach(r=>{ const tr=document.createElement("tr"); const a=document.createElement("td"); a.textContent=r.nome; const b=document.createElement("td"); b.className="n"; b.textContent=r.c+" / "+r.S+(r.g?" (🏁"+r.g+")":""); const c=document.createElement("td"); c.className="n"; c.textContent=r.S?r.p+"%":"—"; tr.append(a,b,c); tr.className="regp"; a.insertAdjacentHTML("beforeend",' <small style="color:var(--muted)">▾</small>'); t.tBodies[0].appendChild(tr);
+      tr.onclick=()=>{ const nx=tr.nextElementSibling; if(nx&&nx.classList.contains("regdet")){ nx.remove(); return; } const dr=document.createElement("tr"); dr.className="regdet"; const td=document.createElement("td"); td.colSpan=3; td.appendChild(onePres(r,st,T)); dr.appendChild(td); tr.after(dr); }; });
     M.appendChild(t); const nt=document.createElement("p"); nt.className="note";
-    const [y,m,d]=st.split("-"); nt.textContent="Conteggio progressivo dal "+d+"/"+m+"/"+y+" a oggi. Sedute previste secondo il numero assegnato a ciascuno (6 o 4 a settimana), tenendo conto della data dei cambi. Le gare (🏁) contano come presenze."; M.appendChild(nt);
+    const [y,m,d]=st.split("-"); nt.textContent="Conteggio progressivo dal "+d+"/"+m+"/"+y+" a oggi. Sedute previste secondo il numero assegnato a ciascuno (6 o 4 a settimana), tenendo conto della data dei cambi. Le gare (🏁) contano come presenze. Tocca un nome per vedere giorno per giorno le sue presenze."; M.appendChild(nt);
   }
+  function onePres(r,st,T){ const box=document.createElement("div"); box.className="onep"; const GN=["Dom","Lun","Mar","Mer","Gio","Ven","Sab"]; const out=[];
+    const d=new Date(T+"T12:00:00"), s0=new Date(st+"T12:00:00");
+    while(d>=s0){ const dk=dkey(d), k={1:"lun",2:"mar",3:"mer",4:"gio",5:"ven",6:"sab"}[d.getDay()], it=r.info[dk]; const exp=k&&!offFor(r.rec,k,dk);
+      if(it||exp){ let txt, cls; if(it){ const h=new Date(it.ora); txt=it.gara?"🏁 in gara":it.dopo?"✓ aggiunta dopo":"✓ "+pad(h.getHours())+":"+pad(h.getMinutes()); cls=it.gara?"g":"ok"; } else if(dk===today()){ txt="oggi: non ancora"; cls=""; } else { txt="✗ assente"; cls="no"; }
+        out.push(`<div class="${cls}"><span>${GN[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}</span><b>${txt}</b></div>`); }
+      d.setDate(d.getDate()-1); }
+    box.innerHTML=out.join("")||'<p class="note">Nessuna seduta nel periodo.</p>'; return box; }
   $("regDate").addEventListener("change",renderReg);
   $("regStart").addEventListener("change",async()=>{ const v=$("regStart").value; if(!v) return; regStart=v; renderReg(); try{ await db.doc("config/registro").set({inizio:v}); }catch(e){} });
   function renderWho(){
