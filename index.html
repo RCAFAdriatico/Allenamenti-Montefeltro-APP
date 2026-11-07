@@ -80,6 +80,7 @@ ol.seq li .d small{display:block;color:var(--muted);font-size:13px}
 ol.seq li.k-remo .d b{color:var(--remo)}
 ol.seq li.k-recupero .d b,ol.seq li.k-chiusura .d b{color:var(--muted);font-weight:500}
 ol.seq li.cur{background:var(--red-soft)}
+.stepH{font-family:var(--display);font-size:20px;margin:18px 0 6px;padding-top:10px;border-top:1px solid var(--line)}.draftbar{background:#fff4d6;color:#7a5200;border-radius:10px;padding:8px 12px;font-weight:600;font-size:14px;margin:6px 0}.rotprev{margin-top:6px;font-size:13px;line-height:1.45}.rotprev div{margin-top:2px}
 tr.regp{cursor:pointer}.onep{display:grid;gap:2px;padding:4px 0 8px}.onep div{display:flex;justify-content:space-between;font-size:14px;padding:3px 8px;border-radius:6px;background:var(--bg)}.onep .no b{color:var(--red)}.onep .ok b{color:#1b8a4a}.onep .g b{color:var(--remo)}
 .regchk{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}.regchk label{display:flex;align-items:center;gap:6px;font-size:15px}
 .late{margin-top:10px}.late summary{cursor:pointer;color:var(--muted);font-size:14px;text-decoration:underline}
@@ -382,14 +383,22 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <div class="row" style="align-items:center"><span class="note" id="pickN" style="flex:1"></span><button class="btn" id="pickOk" style="flex:0 0 auto">Fatto</button></div></div></dialog>
   <details class="coach" id="coach" hidden>
     <summary>Area allenatore · esercizi e impostazioni</summary>
-    <p class="note">Scrivi l'impostazione Tabata del giorno (una per tutti) e per ogni isola scegli gli esercizi toccando le immagini. Con «Riga scritta» aggiungi un'indicazione libera. Poi premi Salva.</p>
-    <div class="field fmtbox" id="fmtField" hidden><label for="fmtSel">Formato dell'allenamento di questo giorno</label><select id="fmtSel" class="pl"></select>
-      <label class="fmtchk"><input type="checkbox" id="fmtPer"> Differenzia per età</label>
-      <div id="fmtGr" hidden></div><p class="note" id="fmtNote"></p></div>
-    <div class="field" id="tabField"><label for="tabIn">Impostazione Tabata (per tutti)</label><input id="tabIn" class="pl" placeholder="es. 30&quot;/10&quot; × 6 · 2 giri"></div>
+    <p class="note">Prepari la seduta del giorno scelto in alto in 4 passi. I ragazzi vedono le modifiche solo quando premi <b>Pubblica</b>.</p>
+    <div class="draftbar" id="draftBar" hidden>Modifiche non ancora pubblicate</div>
+    <h3 class="stepH" id="step1h">1 · Che seduta è</h3>
+    <div class="field fmtbox" id="fmtField" hidden><label for="fmtSel">Struttura: come si gira tra le isole</label><select id="fmtSel" class="pl"></select>
+      <div class="note" id="fmtNote"></div>
+      <label class="fmtchk"><input type="checkbox" id="fmtPer"> Un'altra seduta per i più giovani</label>
+      <div id="fmtGr" hidden></div></div>
+    <h3 class="stepH">2 · Cosa si fa in ogni isola</h3>
+    <p class="note" style="margin-top:0">Per ogni isola prendi un allenamento dalla 📚 libreria oppure scrivilo tu.</p>
     <div id="editor"></div>
+    <h3 class="stepH">3 · Tabata e allenamento in aggiunta</h3>
+    <div class="field" id="tabField"><label for="tabIn">Impostazione Tabata (per tutti)</label><input id="tabIn" class="pl" placeholder="es. 30&quot;/10&quot; × 6 · 2 giri"></div>
     <div id="extraEd" class="extra-ed"></div>
-    <div class="row" style="margin-top:12px"><button class="btn" id="saveEx">Salva</button></div>
+    <h3 class="stepH">4 · Controlla e pubblica</h3>
+    <p class="note" style="margin-top:0">In cima alla pagina vedi la seduta come la vedranno i ragazzi: scegli un gruppo per controllarla.</p>
+    <div class="row" style="margin-top:8px"><button class="btn sec" id="prevBtn" type="button">👀 Guarda l'anteprima</button><button class="btn" id="saveEx">Pubblica</button></div>
     <div class="status" id="saveMsg"></div>
   </details>
   <details class="coach" id="libEd" hidden>
@@ -437,7 +446,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <div id="persTest"></div>
     <div class="row"><button type="button" class="btn sec" id="persClose">Chiudi</button></div>
   </div></dialog>
-  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 07/11/2026 14:06</p>
+  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 07/11/2026 14:15</p>
   <details class="coach" id="reg" hidden>
     <summary>Registro presenze</summary>
     <div class="field"><label for="regDate">Giorno</label><input type="date" id="regDate" style="font:inherit;border:1.5px solid var(--line);border-radius:8px;padding:6px;background:var(--bg);color:var(--ink)"></div>
@@ -498,32 +507,23 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     add(c1,"Circuito "+c1+" a coppie","10' · 2 per postazione",10); add(c2,"Circuito "+c2+" a coppie","10' · 2 per postazione",10); add("DEF","Defaticamento","Tutti insieme",10); return o; };
   const ABK=[["A","Circuito A"],["B","Circuito B"]];
   const FORMATS={
-    lun:{tag:"Remo",nome:"Fondo lungo a piramide (lunedì)",base:"lun"},
-    ven:{tag:"Remo",nome:"Turni da 8' remo + circuiti (venerdì)",base:"ven"},
-    mer:{tag:"Circuito",nome:"4 isole con sovraccarico (mercoledì)",base:"mer"},
-    vel:{tag:"Remo",nome:"Velocità al remo",sub:"Corsa 20', poi 2 blocchi da 25': remo velocità (sprint da 15\") e circuiti A + B · 10' di defaticamento",
-      keys:[["R_vel","Remo · velocità"]].concat(ABK),order:blocchi("Remo velocità 25'","R_vel"),pianta:"ven",cap:"Due gruppi al remo (10 macchine), due ai circuiti; dopo 25' si cambia. Chi è ai circuiti fa A e B (G1 e G3 partono dall'A, G2 e G4 dal B).",
-      def:{R_vel:{esercizi:["8' riscaldamento progressivo da 18 a 22 colpi, con 3 partenze da 5 colpi","1ª serie: 6 × (15\" a tutta + 45\" leggero a 18 colpi)","2' leggero","2ª serie: 6 × (15\" a tutta + 45\" leggero a 18 colpi)","3' leggero per chiudere"],note:"Velocità: ogni sprint al massimo, il recupero davvero leggero."}}},
-    cresc:{tag:"Remo",nome:"Remo continuo a colpi crescenti",sub:"Corsa 20', poi 2 blocchi da 25': remo continuo a colpi crescenti e circuiti A + B · 10' di defaticamento",
-      keys:[["R_cresc","Remo · colpi crescenti"]].concat(ABK),order:blocchi("Remo a colpi crescenti 25'","R_cresc"),pianta:"ven",cap:"Due gruppi al remo (10 macchine), due ai circuiti; dopo 25' si cambia. Chi è ai circuiti fa A e B (G1 e G3 partono dall'A, G2 e G4 dal B).",
-      def:{R_cresc:{esercizi:["5' a 18 colpi","5' a 20 colpi","5' a 22 colpi","5' a 24 colpi","5' leggero a 18 colpi"],note:"Remata continua, senza fermarsi: si cambia solo il numero di colpi."}}},
-    staff:{tag:"Remo",nome:"Staffette a squadre (Beach Sprint)",sub:"Corsa 20', poi 2 blocchi da 25': staffette al remo squadra contro squadra e circuiti A + B · 10' di defaticamento",
-      keys:[["R_staff","Remo · staffette"]].concat(ABK),order:blocchi("Staffette al remo 25'","R_staff"),pianta:"ven",cap:"Ogni gruppo è una squadra. Due squadre alla volta fanno le staffette al remo, le altre due i circuiti; dopo 25' si cambia.",
-      def:{R_staff:{esercizi:["8' riscaldamento progressivo con 3 partenze da 5 colpi","Staffetta 1: 250 m a testa, uno alla volta; parte il compagno quando l'altro arriva","4' leggero","Staffetta 2: 250 m a testa, ordine invertito","Fino a fine blocco: leggero a 18 colpi"],note:"Squadra contro squadra: si segna il tempo totale di ogni staffetta. Chi aspetta rema leggero."}}},
-    cop:{tag:"Remo",nome:"Tutti al remo a coppie",sub:"Corsa 20', poi remo a coppie (2 per macchina, 1' a testa) e circuiti a coppie · 10' di defaticamento",
-      keys:[["R_cop","Remo · a coppie"]].concat(ABK),order:coppie,pianta:"ven",cap:"Tutti e 20 al remo insieme, 2 per macchina; poi G1 e G3 al circuito A, G2 e G4 al circuito B (2 per postazione), e si scambiano.",
-      def:{R_cop:{esercizi:["Blocco 1 · 12': 1' di remo a 20 colpi / 1' di core accanto alla macchina, poi si danno il cambio","2' di cambio","Blocco 2 · 10': 1' di remo con 10 colpi forti a inizio minuto / 1' di core"],note:"Chi non rema fa plank, dead bug o ponte glutei accanto alla macchina."}}},
-    s1:{tag:"Pesi",nome:"Pesi · Scheda 1",sub:"Corsa 15', attivazione 10', Scheda 1 (4 × 12/15 all'85%) · 10' di defaticamento",
-      keys:[["S1","Pesi · Scheda 1"]],order:pesiOrder("S1","Pesi · Scheda 1",55),cap:"Tutti i gruppi insieme in sala pesi, a coppie per attrezzo.",
-      def:{S1:{esercizi:["Sottopanca · 4 × 12/15 · 85%","Back squat · 4 × 12/15 · 85%","Spinte su panca piana con bilanciere · 4 × 12/15 · 85%","Leg press 90° · 4 × 12/15 · 85%","Tirate al mento · 4 × 12/15 · 85%","Stacchi con quadbar · 4 × 12/15 · 85%","Pulley · 4 × 12/15 · 85%","Trazioni · 5 × max (a esaurimento)","Broad jump · 5 × 10 salti continui, massima esplosività"],note:"Carico verso il cedimento muscolare, serie fisse. Ginocchia mai oltre la perpendicolare nei salti."}}},
-    s2:{tag:"Pesi",nome:"Pesi · Scheda 2",sub:"Corsa 15', attivazione 10', Scheda 2 (autoregolazione) · 10' di defaticamento",
-      keys:[["S2","Pesi · Scheda 2"]],order:pesiOrder("S2","Pesi · Scheda 2",45),cap:"Tutti i gruppi insieme in sala pesi, a coppie per attrezzo.",
-      def:{S2:{esercizi:["Back squat · 4 × 12","Stacchi con quadbar · 4 × 12","Sottopanca · 4 × 12","Spinte su panca piana con bilanciere · 4 × 12","Pulley · 3 × 12","Affondi alternati con manubri · 3 × 20"],note:"Autoregolazione del carico: avvicinarsi al cedimento senza perdere la tecnica."}}}
+    lun:{tag:"Remo",nome:"Remo a piramide + 2 circuiti",desc:"Pezzi al remo 5'-10'-10'-10'-5'; dopo ogni pezzo recupero 5' e circuito 5'. Isole: 2 remo, circuito A, circuito B.",base:"lun"},
+    ven:{tag:"Remo",nome:"Turni da 8': remo + 2 circuiti",desc:"6 turni da 8' alternando remo e circuito, 4' di recupero dopo il remo. Isole: remo (10 macchine), circuito A, circuito B.",base:"ven"},
+    bl:{tag:"Remo",nome:"Blocchi lunghi 25': remo + circuiti A e B",desc:"Corsa 20', poi 2 blocchi da 25': metà gruppi al remo, metà ai circuiti A e B, poi si cambia. Defaticamento 10'.",sub:"Corsa 20', poi 2 blocchi da 25': remo e circuiti A + B · 10' di defaticamento",
+      keys:[["R_bl","Remoergometro · blocco 25'"]].concat(ABK),order:blocchi("Remoergometro 25'","R_bl"),pianta:"ven",cap:"Due gruppi al remo (10 macchine), due ai circuiti; dopo 25' si cambia. Chi è ai circuiti fa A e B (G1 e G3 partono dall'A, G2 e G4 dal B)."},
+    cop:{tag:"Remo",nome:"Tutti al remo a coppie + circuiti",desc:"Corsa 20', tutti e 20 al remo (2 per macchina), poi circuiti A e B a coppie. Defaticamento 10'.",sub:"Corsa 20', poi remo a coppie (2 per macchina) e circuiti a coppie · 10' di defaticamento",
+      keys:[["R_cop","Remoergometro · a coppie"]].concat(ABK),order:coppie,pianta:"ven",cap:"Tutti e 20 al remo insieme, 2 per macchina; poi G1 e G3 al circuito A, G2 e G4 al circuito B (2 per postazione), e si scambiano."},
+    mer:{tag:"Circuito",nome:"4 isole a rotazione",desc:"Corsa 30', poi 2 giri di 4 isole da 6'; 1' tra le isole, 5' tra i giri. Isole 1, 2, 3, 4.",base:"mer"},
+    pesi:{tag:"Pesi",nome:"Sala pesi (tutti insieme)",desc:"Corsa 15', attivazione 10', scheda pesi, defaticamento 10'. Un'isola: la scheda.",sub:"Corsa 15', attivazione 10', scheda pesi · 10' di defaticamento",
+      keys:[["S","Scheda pesi"]],order:pesiOrder("S","Scheda pesi",50),cap:"Tutti i gruppi insieme in sala pesi, a coppie per attrezzo."}
   };
+  const FALIAS={vel:"bl",cresc:"bl",staff:"bl",s1:"pesi",s2:"pesi"};
   const FDAYS=["lun","mer","ven"];
-  const fmtEta=d=>{ const v=fmtAct[d]; return (v&&typeof v==="object"&&v.eta&&v.eta.dal&&v.eta.giovani)?v.eta:null; };
+  let fmtDraft=null; const fmtVal=d=>(fmtDraft&&fmtDraft.d===d)?fmtDraft.v:fmtAct[d];
+  const fId=id=>FALIAS[id]||id;
+  const fmtEta=d=>{ const v=fmtVal(d); return (v&&typeof v==="object"&&v.eta&&v.eta.dal&&v.eta.giovani)?v.eta:null; };
   const isYoung=d=>{ const e=fmtEta(d), r=meRec(); return !!(e && r && +r.anno>=+e.dal); };
-  const fmtIds=d=>{ const v=fmtAct[d]; const t=(v&&typeof v==="object")?v.tutti:v; const e=fmtEta(d); return [t||d].concat(e?[e.giovani]:[]).map(id=>(FORMATS[id]&&id!==d)?id:d); };
+  const fmtIds=d=>{ const v=fmtVal(d); const t=(v&&typeof v==="object")?v.tutti:v; const e=fmtEta(d); return [t||d].concat(e?[e.giovani]:[]).map(fId).map(id=>(FORMATS[id]&&id!==d)?id:d); };
   const fmtOf=(d,g)=>{ const ids=fmtIds(d); return (isYoung(d)&&ids[1])?ids[1]:ids[0]; };
   const remoKey=(id,d)=>"R_"+id; // remo dei formati di un altro giorno: chiave propria
   function fdef(id,d){ const f=FORMATS[id]; if(!f||id===d) return BASE[d];
@@ -584,7 +584,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       const i=num++;
       const v=norm(data[st.k]); let ex=forGroup((v.esercizi||[]).filter(Boolean),group);
       if(st.p){ const mine=ex.filter(x=>{ const m=/^\s*pezzo da\s*(\d+)\s*['’]/i.exec(x); return !m||+m[1]===st.p; }); ex=mine.map(x=>x.replace(/^\s*pezzo da\s*\d+\s*['’]\s*:\s*/i,"")); }
-      const card=document.createElement("article"); const isR=/^R/.test(st.k), isS=/^S\d/.test(st.k); card.className="card "+(isR?"remo":"circ"); const tg=document.createElement("span"); tg.className="tag "+(isR?"remo":"circ"); tg.textContent=isR?"Remoergometro":isS?"Pesi":"Esercizi"; card.appendChild(tg);
+      const card=document.createElement("article"); const isR=/^R/.test(st.k), isS=/^S\d*$/.test(st.k); card.className="card "+(isR?"remo":"circ"); const tg=document.createElement("span"); tg.className="tag "+(isR?"remo":"circ"); tg.textContent=isR?"Remoergometro":isS?"Pesi":"Esercizi"; card.appendChild(tg);
       const h=document.createElement("h2"); h.textContent=(i+1)+". "+st.t; card.appendChild(h);
       if(st.w||st.m){ const s=document.createElement("div"); s.className="sub"; s.textContent=[st.w,st.m?"min "+st.m:""].filter(Boolean).join(" · "); card.appendChild(s); }
       if(ex.length){ const ol=document.createElement("ol"); ol.className="exs"; ex.forEach(x=>{ if(isR){ const li=document.createElement("li"); li.textContent=x; ol.appendChild(li); } else ol.appendChild(exLi(x)); }); card.appendChild(ol); }
@@ -655,7 +655,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     edKeysFor(day).forEach(([k,l])=>{
       const box=document.createElement("div"); box.className="isola-ed";
       const h=document.createElement("h3"); h.textContent=l; box.appendChild(h);
-      if(/^R/.test(k)||/^S\d/.test(k)){ // remoergometro e pesi: testo, una riga per indicazione
+      if(/^R/.test(k)||/^S\d*$/.test(k)){ // remoergometro e pesi: testo, una riga per indicazione
         const f=document.createElement("div"); f.className="field"; const lb=document.createElement("label"); lb.textContent="Tipo di allenamento (una indicazione per riga)";
         const ta=document.createElement("textarea"); ta.placeholder="es. 1' di partenza + fondo sostenuto 20/22 colpi\nG1: passo 2'15\" → 2'05\"";
         ta.value=(edItems[k]||[]).map(itemLine).join("\n"); ta.oninput=()=>{ edItems[k]=ta.value.split("\n").map(x=>({t:"free",txt:x})); edDirty=true; };
@@ -663,7 +663,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
         f.append(lb,ta,hint); box.appendChild(f);
         // libreria allenamenti remoergometro
         const lr=document.createElement("div"); lr.className="remolib";
-        const lcat=/^S\d/.test(k)?"pesi":"remo";
+        const lcat=/^S\d*$/.test(k)?"pesi":"remo";
         const remos=alt.filter(a=>a.cat===lcat).sort((a,b)=>(a.titolo||"").localeCompare(b.titolo||"","it",{numeric:true}));
         const sel=document.createElement("select"); sel.className="addsel"; sel.innerHTML=`<option value="">📚 Prendi dalla libreria ${lcat}${remos.length?" ("+remos.length+")":" (vuota)"}…</option>`+remos.map(a=>`<option value="${a.id}">${(a.titolo||"").replace(/</g,"&lt;")}</option>`).join("");
         sel.onchange=()=>{ const a=alt.find(x=>x.id===sel.value); sel.value=""; if(!a) return; const add=[a.titolo?"— "+a.titolo+" —":"",a.testo||""].concat((a.esercizi||[]).filter(Boolean)).filter(Boolean).join("\n");
@@ -760,39 +760,45 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     Object.keys(data).forEach(k=>{ if(!isole[k]) isole[k]=norm(data[k]); });
     edKeysFor(day).forEach(([k])=>{ isole[k]={esercizi:(edItems[k]||[]).map(itemLine).map(x=>x.trim()).filter(Boolean),note:(edNote[k]||"").trim(),gruppi:clean(edGr[k])}; });
     const tab=DAYS[day].pesi?"":$("tabIn").value.trim();
-    $("saveMsg").textContent="Salvataggio…";
-    try{ await db.doc("esercizi/"+day).set({isole,tabata:tab,extra:DAYS[day].pesi?null:{titolo:edExtra.titolo.trim(),testo:edExtra.testo.trim(),esercizi:edExtra.esercizi.map(itemLine).filter(Boolean),gruppi:clean(edExtra.gruppi)},aggiornato:Date.now()}); edDirty=false; $("saveMsg").textContent="Salvato: i ragazzi lo vedono subito."; }
+    $("saveMsg").textContent="Pubblicazione…";
+    try{ for(const id of new Set(fmtIds(day))){ const f=FORMATS[id]; if(id===day||!f||!f.base) continue; const empty=k=>!isole[k]||!((isole[k].esercizi||[]).length||isole[k].note);
+        const sn=await db.doc("esercizi/"+f.base).get(); const src=(sn.exists&&sn.data().isole)||{}; BASE[f.base].keys.forEach(([k])=>{ const tk=k==="R"?remoKey(f.base,day):k; if(empty(tk)&&src[k]) isole[tk]=norm(src[k]); }); }
+      await publishFmt(day);
+      await db.doc("esercizi/"+day).set({isole,tabata:tab,extra:DAYS[day].pesi?null:{titolo:edExtra.titolo.trim(),testo:edExtra.testo.trim(),esercizi:edExtra.esercizi.map(itemLine).filter(Boolean),gruppi:clean(edExtra.gruppi)},aggiornato:Date.now()}); edDirty=false; $("saveMsg").textContent="Pubblicato: i ragazzi lo vedono subito."; renderFmt(); }
     catch(e){ $("saveMsg").textContent = e&&e.code==="invalid_argument" ? "Non salvato: non hai i permessi di modifica." : "Non salvato, riprova tra poco."; }
   };
   function fmtOptions(sel,withSame){ const tags=["Remo","Circuito","Pesi"];
-    return (withSame?`<option value="">come tutti</option>`:"")+tags.map(t=>`<optgroup label="${t}">`+Object.entries(FORMATS).filter(([k,f])=>f.tag===t).map(([k,f])=>`<option value="${k}"${k===sel?" selected":""}>[${t}] ${k===day?"Standard di oggi · ":""}${f.nome}</option>`).join("")+`</optgroup>`).join(""); }
+    return (withSame?`<option value="">scegli…</option>`:"")+tags.map(t=>`<optgroup label="${t}">`+Object.entries(FORMATS).filter(([k,f])=>f.tag===t).map(([k,f])=>`<option value="${k}"${k===sel?" selected":""}>${k===day?"★ ":""}${f.nome}${k===day?" (quella del programma)":""}</option>`).join("")+`</optgroup>`).join(""); }
+  function rotPreview(d,id){ const D=fdef(id,d); const line=g=>D.order(g).map(st=>st.t.replace(/ · .*/,"")).join(" → ");
+    const gs=D.keys.length===1?[1]:[1,3]; return gs.map(g=>`<div><b>${D.keys.length===1?"Tutti":"G"+g+(g===1?" e G2":" e G4")}:</b> ${line(g).replace(/</g,"&lt;")}</div>`).join(""); }
   function renderFmt(){
-    const F=$("fmtField"); if(!F) return; F.hidden=!coach||!FDAYS.includes(day); if(F.hidden) return;
-    const v=fmtAct[day], obj=(v&&typeof v==="object"); const tutti=(obj?v.tutti:v)||day; const e=fmtEta(day);
-    $("fmtSel").innerHTML=fmtOptions(FORMATS[tutti]?tutti:day,false); $("fmtPer").checked=!!e || (obj&&!!v.etaOn);
+    const F=$("fmtField"), S1=$("step1h"); if(!F) return; const show=coach&&FDAYS.includes(day); F.hidden=!show; if(S1) S1.hidden=!show; if(!show) return;
+    const v=fmtVal(day), obj=(v&&typeof v==="object"); let tutti=fId((obj?v.tutti:v)||day); if(!FORMATS[tutti]) tutti=day; const e=fmtEta(day);
+    $("fmtSel").innerHTML=fmtOptions(tutti,false); $("fmtPer").checked=!!e || (obj&&!!v.etaOn);
     const G=$("fmtGr"); G.hidden=!$("fmtPer").checked; const dal=(e&&e.dal)||(obj&&v.eta&&v.eta.dal)||2011;
     const anni=[2006,2007,2008,2009,2010,2011,2012,2013,2014];
     G.innerHTML=`<div class="fmtg"><b>Dal</b><select class="pl" id="fmtDal">${anni.map(a=>`<option value="${a}"${a==dal?" selected":""}>nati dal ${a} in poi</option>`).join("")}</select></div>
-      <div class="fmtg"><b>Fanno</b><select class="pl" id="fmtYoung">${fmtOptions((e&&e.giovani)||"",true).replace("come tutti","scegli il formato…")}</select></div>
-      <p class="note" style="margin:6px 0 0">Gli altri fanno il formato scelto sopra. L'età la prende dall'anno nell'elenco atleti.</p>`;
-    $("fmtNote").textContent="Scegli dal repository un formato al posto di quello fisso, per tutti o diverso per età. Se due formati usano le stesse isole nello stesso momento, controlla gli spazi.";
+      <div class="fmtg"><b>Fanno</b><select class="pl" id="fmtYoung">${fmtOptions(fId((e&&e.giovani)||""),true)}</select></div>
+      <p class="note" style="margin:6px 0 0">Gli altri fanno la seduta scelta sopra. L'età la prende dall'anno nell'elenco atleti.</p>`;
+    const f=FORMATS[tutti]; $("fmtNote").innerHTML=`<span>${(f.desc||"").replace(/</g,"&lt;")}</span><div class="rotprev">${rotPreview(day,tutti)}</div>`;
+    const dr=$("draftBar"); if(dr) dr.hidden=!(fmtDraft&&fmtDraft.d===day) && !edDirty;
   }
-  async function saveFmt(){ const d=day, tutti=$("fmtSel").value; let val=tutti;
+  function fmtChanged(){ const d=day, tutti=$("fmtSel").value; let val=tutti;
     if($("fmtPer").checked){ const dal=$("fmtDal")?+$("fmtDal").value:2011, gio=$("fmtYoung")?$("fmtYoung").value:""; val={tutti,etaOn:true,eta:{dal,giovani:gio||""}}; }
-    fmtAct[d]=val; renderPickers(); renderList(); edDirty=false; renderEditor();
-    try{ await db.doc("config/formati").update({[d]:val});
-      const ids=new Set(fmtIds(d)); const add={};
-      const empty=k=>{ const x=norm(data[k]); return !(x.esercizi||[]).filter(Boolean).length && !x.note; };
-      for(const id of ids){ if(id===d) continue; const f=FORMATS[id];
-        if(f.def) Object.entries(f.def).forEach(([k,c])=>{ if(empty(k)) add[k]={esercizi:c.esercizi,note:c.note||"",gruppi:{}}; });
-        if(f.base){ const sn=await db.doc("esercizi/"+f.base).get(); const src=(sn.exists&&sn.data().isole)||{};
-          BASE[f.base].keys.forEach(([k])=>{ const tk=k==="R"?remoKey(f.base,d):k; if(empty(tk)&&src[k]) add[tk]=norm(src[k]); }); } }
-      if(Object.keys(add).length) await db.doc("esercizi/"+d).update({isole:add});
-      $("fmtNote").textContent="Formato salvato: i ragazzi lo vedono subito."; }
-    catch(e){ $("fmtNote").textContent="Non salvato: controlla la connessione."; } }
-  $("fmtSel").addEventListener("change",saveFmt);
-  $("fmtPer").addEventListener("change",()=>{ $("fmtGr").hidden=!$("fmtPer").checked; saveFmt(); });
-  $("fmtGr").addEventListener("change",saveFmt);
+    fmtDraft={d,v:val}; edDirty=true; renderPickers(); renderList(); renderEditor(false); }
+  async function publishFmt(d){ if(!(fmtDraft&&fmtDraft.d===d)) return; const val=fmtDraft.v;
+    await db.doc("config/formati").update({[d]:val}); fmtAct[d]=val; fmtDraft=null; }
+  $("fmtSel").addEventListener("change",fmtChanged);
+  $("prevBtn").addEventListener("click",()=>{ const clean=o=>{ const r={}; [1,2,3,4].forEach(g=>{ const v=(o&&o[g]||"").trim(); if(v) r[g]=v; }); return r; };
+    const D0=data, T0=tabata, X0=extra; const isole=Object.assign({},data);
+    edKeysFor(day).forEach(([k])=>{ isole[k]={esercizi:(edItems[k]||[]).map(itemLine).map(x=>x.trim()).filter(Boolean),note:(edNote[k]||"").trim(),gruppi:clean(edGr[k])}; });
+    data=isole; tabata=DAYS[day].pesi?"":$("tabIn").value.trim(); extra=(edExtra.titolo.trim()||edExtra.testo.trim()||edExtra.esercizi.length)?{titolo:edExtra.titolo.trim(),testo:edExtra.testo.trim(),esercizi:edExtra.esercizi.map(itemLine).filter(Boolean),gruppi:clean(edExtra.gruppi)}:null;
+    try{ renderList(); } finally { data=D0; tabata=T0; extra=X0; }
+    $("list").insertAdjacentHTML("afterbegin",`<div class="draftbar">Anteprima: non ancora pubblicata. Cambia gruppo in alto per vedere gli altri.</div>`);
+    window.scrollTo({top:Math.max(0,$("list").getBoundingClientRect().top+scrollY-140),behavior:"smooth"}); });
+  setInterval(()=>{ const dr=$("draftBar"); if(dr&&coach) dr.hidden=!edDirty&&!(fmtDraft&&fmtDraft.d===day); },800);
+  $("fmtPer").addEventListener("change",()=>{ $("fmtGr").hidden=!$("fmtPer").checked; fmtChanged(); });
+  $("fmtGr").addEventListener("change",fmtChanged);
   function subscribe(){
     if(unsub){unsub();unsub=null;} data={}; tabata=""; extra=null; if(!db) return;
     unsub=db.doc("esercizi/"+day).onSnapshot(snap=>{ const d=snap.exists?snap.data():null; data=(d&&d.isole)||{}; tabata=(d&&d.tabata)||""; extra=(d&&d.extra&&(d.extra.titolo||d.extra.testo||(d.extra.esercizi||[]).length||Object.keys(d.extra.gruppi||{}).length))?d.extra:null;
@@ -1097,17 +1103,21 @@ Viola; 2013; 4:17.3; 29; 2026-10-16`;
   // ---------- Allenamenti di partenza per la libreria (inseriti una volta, solo se mancano) ----------
   const LIBSEED=[{"cat": "remo", "titolo": "Fondo lungo a piramide 5'-10'-10'-10'-5'", "testo": "Pezzi da 5', 10', 10', 10', 5'.\nOgni pezzo: 1' di partenza + il resto a 22 colpi.\nDopo ogni pezzo: 5' di recupero, poi 5' di circuito e subito al remo.", "esercizi": []}, {"cat": "remo", "titolo": "Turni da 8' (1' partenza + 7' a 22)", "testo": "3 turni da 8': 1' di partenza + 7' a 22 colpi.\nDopo ogni turno: 4' di recupero, poi 8' di circuito.", "esercizi": []}, {"cat": "remo", "titolo": "Velocità al remo", "testo": "8' riscaldamento progressivo da 18 a 22 colpi, con 3 partenze da 5 colpi.\n1ª serie: 6 × (15\" a tutta + 45\" leggero a 18 colpi).\n2' leggero.\n2ª serie: 6 × (15\" a tutta + 45\" leggero a 18 colpi).\n3' leggero per chiudere.\nOgni sprint al massimo, il recupero davvero leggero.", "esercizi": []}, {"cat": "remo", "titolo": "Remo continuo a colpi crescenti", "testo": "20' continui senza fermarsi: 5' a 18, 5' a 20, 5' a 22, 5' a 24 colpi.\n5' leggero a 18 colpi.\nSi cambia solo il numero di colpi.", "esercizi": []}, {"cat": "remo", "titolo": "Staffette a squadre (Beach Sprint)", "testo": "8' riscaldamento progressivo con 3 partenze da 5 colpi.\nStaffetta 1: 250 m a testa, uno alla volta; parte il compagno quando l'altro arriva.\n4' leggero.\nStaffetta 2: 250 m a testa, ordine invertito.\nSquadra contro squadra: si segna il tempo totale. Chi aspetta rema leggero.", "esercizi": []}, {"cat": "remo", "titolo": "Tutti al remo a coppie", "testo": "2 atleti per remoergometro.\nBlocco 1 · 12': 1' di remo a 20 colpi / 1' di core accanto alla macchina, poi cambio.\n2' di cambio.\nBlocco 2 · 10': 1' di remo con 10 colpi forti a inizio minuto / 1' di core.\nCore: plank, dead bug, ponte glutei.", "esercizi": []}, {"cat": "remo", "titolo": "6000 progressivo (test non massimale)", "testo": "Riscaldamento 10' a 18-20 colpi + 3 partenze da 5 colpi.\n6000 m di fila in tre parti:\n1-2000: passo gara + 6\" a 22-24 colpi.\n2001-4000: passo gara + 4\" a 24-26 colpi.\n4001-6000: passo gara + 2\" a 26-28 colpi (negli ultimi 500 si può arrivare al passo gara).\nDefaticamento 5'.\nIl passo gara di ognuno è nel suo programma o lo dà l'allenatore.", "esercizi": []}, {"cat": "remo", "titolo": "Test passo gara 3 × 2000", "testo": "Riscaldamento 10' a 18-20 colpi + 3 partenze da 5 colpi.\n3 × 2000 m al passo gara, a 24-26 colpi, con 4' di remata leggera tra un 2000 e l'altro.\nSe il terzo 2000 cala di più di 2-3\" al /500, il passo gara è troppo alto.\nDefaticamento 5-10'.", "esercizi": []}, {"cat": "remo", "titolo": "2000 al 90% a 30 colpi", "testo": "Riscaldamento 10' + 3 partenze.\n2000 m a 30 colpi al 90% (passo /500 personale indicato dall'allenatore).\nDefaticamento 5'.", "esercizi": []}, {"cat": "remo", "titolo": "2000 all'80% a 30 colpi", "testo": "Riscaldamento 10'.\n2000 m a 30 colpi all'80%: colpo leggero, lavoro su ritmo e coordinazione (passo /500 personale indicato dall'allenatore).\nDefaticamento 5'.", "esercizi": []}, {"cat": "circuito", "titolo": "Circuito funzionale A", "testo": "5 esercizi funzionali × (45\" + 15\"), intensità moderata, niente Tabata.", "esercizi": ["Slam ball", "DB snatch", "Burpees", "Russian swing", "Battle rope"]}, {"cat": "circuito", "titolo": "Circuito funzionale B", "testo": "5 esercizi funzionali × (45\" + 15\"), intensità moderata, niente Tabata.", "esercizi": ["Clean high pull", "Push up + air squat", "Plate snatch + plate thruster", "Burpees box jump", "Mountain climbers"]}, {"cat": "circuito", "titolo": "Isola sovraccarico 1", "testo": "Isola 6': 6 esercizi × (45\" + 15\"). Se è la prima isola del giro: 1 Tabata + 2' blandi.", "esercizi": ["Goblet squat", "Lento avanti con manubri", "Rematore con manubri", "Stacco rumeno con manubri", "Russian swing", "Affondi alternati con manubri"]}, {"cat": "circuito", "titolo": "Isola sovraccarico 2", "testo": "Isola 6': 6 esercizi × (45\" + 15\"). Se è la prima isola del giro: 1 Tabata + 2' blandi.", "esercizi": ["Sumo squat con manubrio", "Push-up sui manubri", "Rematore a un braccio su panca", "Hip thrust su panca", "Slam ball", "Alzate laterali"]}, {"cat": "circuito", "titolo": "Isola sovraccarico 3", "testo": "Isola 6': 6 esercizi × (45\" + 15\"). Se è la prima isola del giro: 1 Tabata + 2' blandi.", "esercizi": ["Split squat con manubri", "Arnold press", "Alzate posteriori a busto flesso", "Stacco con manubri", "DB snatch", "Calf raise su step"]}, {"cat": "circuito", "titolo": "Isola sovraccarico 4", "testo": "Isola 6': 6 esercizi × (45\" + 15\"). Se è la prima isola del giro: 1 Tabata + 2' blandi.", "esercizi": ["Affondo indietro con manubri", "Alzate frontali", "Clean high pull", "Affondo laterale con manubri", "Plate snatch + plate thruster", "Curl con manubri"]}, {"cat": "circuito", "titolo": "Core stability", "testo": "8 esercizi × (45\" + 15\"): controllo e posizione, niente fretta.", "esercizi": ["Dead bug alternato", "Bird dog alternato", "Plank sugli avambracci", "Plank laterale destro", "Plank laterale sinistro", "Ponte glutei", "Bird dog in posizione di push-up", "Ponte glutei su una gamba"]}, {"cat": "circuito", "titolo": "Circuito con sovraccarico", "testo": "8 esercizi × (45\" + 15\"), intensità moderata.", "esercizi": ["Goblet squat", "Rematore con manubri", "Lento avanti con manubri", "Stacco rumeno con manubri", "Affondi in camminata con manubri", "Push-up sui manubri", "Russian swing", "Clean high pull"]}];
   const LIBSEED2=[{"cat": "remo", "titolo": "Piramide 5'-10'-10'-10'-5'", "testo": "Pezzi al remo da 5', 10', 10', 10', 5' (40' in tutto).\nOgni pezzo: 1' di partenza + il resto a 22 colpi (5' = 1' + 4'; 10' = 1' + 9').\nDopo ogni pezzo: 5' di recupero, poi 5' di circuito e subito di nuovo al remo.", "esercizi": []}, {"cat": "remo", "titolo": "Pesi + remoergometro", "testo": "4 giri · 15 ripetizioni per esercizio.\nAlla fine di ogni giro: 8' al remoergometro = 1' di partenza + 7' a 22 colpi.", "esercizi": ["Back squat", "Spinte su panca piana con bilanciere", "Stacchi con quadbar", "Trazioni", "Leg press 90°", "Pulley", "Sottopanca", "Tirate al mento"]}, {"cat": "remo", "titolo": "Turni da 8' con recupero 4'", "testo": "3 turni al remo da 8' = 1' di partenza + 7' a 22 colpi.\nDopo ogni turno: 4' di recupero, poi 8' di circuito e subito di nuovo al remo.", "esercizi": []}];
+  const LIBSEED3=[{"cat": "pesi", "titolo": "Scheda 1", "testo": "Corsa 15', attivazione 10'. 4 serie da 12/15 all'85%, verso il cedimento; trazioni 5 × max; broad jump 5 × 10 salti continui.", "esercizi": ["Sottopanca · 4 × 12/15 · 85%", "Back squat · 4 × 12/15 · 85%", "Spinte su panca piana con bilanciere · 4 × 12/15 · 85%", "Leg press 90° · 4 × 12/15 · 85%", "Tirate al mento · 4 × 12/15 · 85%", "Stacchi con quadbar · 4 × 12/15 · 85%", "Pulley · 4 × 12/15 · 85%", "Trazioni · 5 × max", "Broad jump · 5 × 10"]}, {"cat": "pesi", "titolo": "Scheda 2", "testo": "Corsa 15', attivazione 10'. Autoregolazione del carico: avvicinarsi al cedimento senza perdere la tecnica.", "esercizi": ["Back squat · 4 × 12", "Stacchi con quadbar · 4 × 12", "Sottopanca · 4 × 12", "Spinte su panca piana con bilanciere · 4 × 12", "Pulley · 3 × 12", "Affondi alternati con manubri · 3 × 20"]}];
   let libSeedDone=false;
   async function seedLib(){ if(libSeedDone||!coach||!db) return; libSeedDone=true;
-    try{ const sn=await db.doc("config/libseed").get(); const v=(sn.exists&&sn.data().v)||0; if(v>=3) return;
+    try{ const sn=await db.doc("config/libseed").get(); const v=(sn.exists&&sn.data().v)||0; if(v>=4) return;
+      if(v===3){ const have=new Set(alt.map(a=>(a.cat||"")+"|"+nrm(a.titolo||""))); let i=0;
+        for(const w of LIBSEED3){ if(have.has(w.cat+"|"+nrm(w.titolo))) continue; const now=Date.now(); await db.doc("allenamenti/s"+now.toString(36)+(i++)).set(Object.assign({},w,{creato:now,aggiornato:now})); }
+        await db.doc("config/libseed").set({v:4,quando:Date.now()}); return; }
       if(v>=2){ // togli il giorno dai titoli: la libreria è generica
         const re=/^(Lunedì|Martedì|Mercoledì|Giovedì|Venerdì|Sabato)\s*·\s*/; const NEWT={"Turni da 8'":"Turni da 8' con recupero 4'"};
         for(const a of alt){ if(re.test(a.titolo||"")){ let t=a.titolo.replace(re,""); t=NEWT[t]||t; const d=Object.assign({},a); delete d.id; d.titolo=t; d.aggiornato=Date.now(); await db.doc("allenamenti/"+a.id).set(d); } }
-        await db.doc("config/libseed").set({v:3,quando:Date.now()}); return; }
+        await db.doc("config/libseed").set({v:3,quando:Date.now()}); libSeedDone=false; setTimeout(seedLib,1500); return; }
       const have=new Set(alt.map(a=>(a.cat||"")+"|"+nrm(a.titolo||""))); let i=0;
-      for(const w of (v>=1?LIBSEED2:LIBSEED.concat(LIBSEED2))){ if(have.has(w.cat+"|"+nrm(w.titolo))) continue; const now=Date.now();
+      for(const w of (v>=1?LIBSEED2.concat(LIBSEED3):LIBSEED.concat(LIBSEED2,LIBSEED3))){ if(have.has(w.cat+"|"+nrm(w.titolo))) continue; const now=Date.now();
         await db.doc("allenamenti/s"+now.toString(36)+(i++)).set(Object.assign({},w,{creato:now,aggiornato:now})); }
-      await db.doc("config/libseed").set({v:3,quando:Date.now()}); }catch(e){ libSeedDone=false; } }
+      await db.doc("config/libseed").set({v:4,quando:Date.now()}); }catch(e){ libSeedDone=false; } }
   function renderTestCoach(){
     if(!coach) return; const T=$("testTab"); T.innerHTML="";
     const users=[...new Set(roster.map(r=>r.username).concat(Object.keys(allTests)))].filter(u=>(allTests[u]||[]).length);
