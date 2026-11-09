@@ -447,7 +447,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <div id="persTest"></div>
     <div class="row"><button type="button" class="btn sec" id="persClose">Chiudi</button></div>
   </div></dialog>
-  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 07/11/2026 14:29</p>
+  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 09/11/2026 18:16</p>
   <details class="coach" id="reg" hidden>
     <summary>Registro presenze</summary>
     <div class="field"><label for="regDate">Giorno</label><input type="date" id="regDate" style="font:inherit;border:1.5px solid var(--line);border-radius:8px;padding:6px;background:var(--bg);color:var(--ink)"></div>
@@ -890,7 +890,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       W.querySelector(".ok").textContent=r.nome+" · "+r.username; W.querySelector(".note").textContent=seduteTxt(r);
       $("whoChg").onclick=()=>{ window.MF.logout(); location.reload(); }; return; }
     W.innerHTML=`<div class="row"><input class="uinput" id="whoIn" autocomplete="username" autocapitalize="none" placeholder="Il tuo username"><input class="uinput" id="pinIn" inputmode="numeric" autocomplete="off" placeholder="PIN (se ce l'hai)" style="flex:0 1 120px"></div><div class="row" style="margin-top:8px"><button class="btn" id="whoOk">Entra</button></div><p class="note" id="whoMsg">Username e PIN te li dà l'allenatore.</p>`; if(reLog){ $("whoIn").value=me; $("whoMsg").textContent="Rientra con username e PIN: l'accesso non è più valido (forse il PIN è stato aggiunto o cambiato)."; $("whoMsg").style.color="var(--red)"; }
-    $("whoOk").onclick=()=>{ const v=$("whoIn").value.trim().toLowerCase(); if(!roster.length){ $("whoMsg").textContent="Elenco atleti non ancora caricato: riprova tra poco."; return; } if(!roster.some(x=>x.username===v)){ $("whoMsg").textContent="Username non trovato. Controlla con l'allenatore."; return; } $("whoMsg").textContent="Controllo…"; window.MF.login(v,$("pinIn").value.trim()).then(ok=>{ if(ok){ location.reload(); } else $("whoMsg").textContent= ok===null?"Connessione assente: riprova.":"Username o PIN non corretti."; }); };
+    $("whoOk").onclick=()=>{ const v=$("whoIn").value.trim().toLowerCase(); if(!v){ $("whoMsg").textContent="Scrivi il tuo username."; return; } if(roster.length&&!roster.some(x=>x.username===v)){ $("whoMsg").textContent="Username «"+v+"» non trovato. Controlla con l'allenatore come è scritto."; return; } $("whoMsg").textContent="Controllo…"; window.MF.login(v,$("pinIn").value.trim()).then(ok=>{ if(ok){ location.reload(); } else $("whoMsg").textContent= ok===null?"Connessione assente: riprova.":"Username o PIN non corretti."; }); };
   }
 
   // ---------- Altri allenamenti (fuori dalla struttura settimanale) ----------
