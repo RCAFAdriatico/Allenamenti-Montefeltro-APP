@@ -86,6 +86,7 @@ tr.regp{cursor:pointer}.onep{display:grid;gap:2px;padding:4px 0 8px}.onep div{di
 .regchk{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}.regchk label{display:flex;align-items:center;gap:6px;font-size:15px}
 .late{margin-top:10px}.late summary{cursor:pointer;color:var(--muted);font-size:14px;text-decoration:underline}
 #testTab{overflow-x:auto;max-width:100%}
+.lavgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 10px}.lavgrid.sm{grid-template-columns:repeat(4,1fr)}.lavph{position:relative;margin:0}.lavph img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:var(--bg);display:block}.lavph figcaption{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}.lavx{position:absolute;top:4px;right:4px;border:0;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;padding:3px 7px;cursor:pointer}.lavt{font-weight:700;margin:10px 0 4px}.lavprev{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}label.btn{display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
 .tt3 .rn{font-weight:700;min-width:26px;color:var(--muted)}
 #testTab td.yrow{background:var(--bg);font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding-top:10px}
 .testform .tt3{display:flex!important;flex-direction:row;align-items:center;gap:6px;flex-wrap:nowrap}.tt3 span{font-weight:600;margin-right:4px}.testform .tt3 b,.testform .tt3 span{display:inline;width:auto}.testform .tt3 input{width:52px!important;flex:0 0 52px;margin:0;text-align:center;font-size:18px;padding:8px 4px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}.tt3 b{font-weight:500;color:var(--muted);font-size:14px;margin-right:6px}
@@ -324,7 +325,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     logout: () => { ls.set("mf_user", null); ls.set("mf_pin", null); },
     coachLogin: async pw => { try{ const r = await fetch(API_URL, { method:"POST", body: JSON.stringify({ action:"coach", coach:pw }), cache:"no-store" }); const j = await r.json(); if(j.ok) ls.set("mf_coachpw", pw); return !!j.ok; }catch(e){ return null; } },
     coachLogout: () => ls.set("mf_coachpw", null),
-    isCoach: () => who.coach
+    isCoach: () => who.coach,
+    uploadFoto: async (blob, name) => { const j = await api("upload", { name: name||"lavoro.jpg", type:"image/jpeg", b64: await toB64(blob) }); return { id: j.id, url: j.url }; }
   };
 })();
 
@@ -344,6 +346,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   <section class="card" id="pres" hidden><div class="label">Presenza di oggi</div><div id="presBody"></div></section>
   <section class="card mine" id="mioProg" hidden><div class="label">Il tuo programma personale</div><div id="mioProgBody"></div></section>
   <details class="libwrap" id="mieiTest" hidden><summary>I miei test</summary><div id="testBody"></div><div class="row"><button type="button" class="btn sec dclose">Chiudi i test ▲</button></div></details>
+  <details class="libwrap" id="mieiLavori" hidden><summary>📷 I miei lavori al remo</summary><div id="lavBody"></div><div class="row"><button type="button" class="btn sec dclose">Chiudi ▲</button></div></details>
   <figure class="card" id="pianta" style="margin:0"><div class="label">Pianta della palestra</div><div id="piantaSvg"></div><figcaption class="note" id="piantaCap"></figcaption></figure>
   <div class="tabata" id="tabata" hidden><span class="label">Tabata · uguale per tutti</span><b id="tabataTxt"></b></div>
   <div class="legend isl"><span class="tag remo">Remoergometro</span><span class="tag circ">Esercizi</span></div>
@@ -445,9 +448,11 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <div class="row"><button type="button" class="btn sm" id="persAdd">＋ Nuovo allenamento personale</button></div>
     <div class="label" style="margin-top:10px">Test</div>
     <div id="persTest"></div>
+    <p class="label" style="margin-top:14px">📷 Lavori al remo</p>
+    <div id="persLav"></div>
     <div class="row"><button type="button" class="btn sec" id="persClose">Chiudi</button></div>
   </div></dialog>
-  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 09/11/2026 18:16</p>
+  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 11/11/2026 19:27</p>
   <details class="coach" id="reg" hidden>
     <summary>Registro presenze</summary>
     <div class="field"><label for="regDate">Giorno</label><input type="date" id="regDate" style="font:inherit;border:1.5px solid var(--line);border-radius:8px;padding:6px;background:var(--bg);color:var(--ink)"></div>
@@ -570,7 +575,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     else { const n=document.createElement("p"); n.className="note"; n.textContent="Gli esercizi li indica l'allenatore."; c.appendChild(n); }
     return c; }
   function renderList(){
-    const L=$("list"); L.innerHTML="";
+    const L=$("list"); L.innerHTML=""; lavShown=false;
     $("tabata").hidden=!tabata||!!DAYS[day].pesi||offFor(meRec(),day); $("tabataTxt").textContent=tabata;
     if(offFor(meRec(),day)){ L.innerHTML=`<div class="card off"><h2>Oggi per te niente seduta</h2><p>Per ora fai 4 sedute: lunedì, mercoledì, venerdì e sabato.</p></div>`; return; }
     if(DAYS[day].pesi){ const v=norm(data["P"]); const card=document.createElement("article"); card.className="card pesi"; const h=document.createElement("h2"); h.textContent="Pesi con il personal trainer"; card.appendChild(h); const sb=document.createElement("div"); sb.className="sub"; sb.textContent="Altra palestra · il programma lo dà il personal trainer"; card.appendChild(sb); if(v.note){const n=document.createElement("p"); n.className="note"; n.textContent=v.note; card.appendChild(n);} const ex=(v.esercizi||[]).filter(Boolean); if(ex.length){ const ol=document.createElement("ol"); ol.className="exs"; ex.forEach(x=>ol.appendChild(exLi(x))); card.appendChild(ol);} L.appendChild(card); return; }
@@ -592,6 +597,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       const gn=groupNote(v.gruppi); if(gn) card.appendChild(gn);
       if(v.note){ const n=document.createElement("p"); n.className="note"; n.textContent=v.note; card.appendChild(n); }
       if(!ex.length && !v.note && !gn){ const n=document.createElement("p"); n.className="note"; n.textContent=isR?"Indicazioni per il remo non ancora inserite.":"L'allenatore non ha ancora inserito gli esercizi per questa isola."; card.appendChild(n); }
+      if(isR&&ex.length){ const ts=[]; ex.forEach(x=>{ const m=/^\s*[—-]+\s*(.+?)\s*[—-]+\s*$/.exec(x); if(m) ts.push(m[1]); }); if(!ts.length) ts.push(ex[0].slice(0,70)); const pv=lavShown?null:prevLav(ts); if(pv){ card.appendChild(pv); lavShown=true; } }
       L.appendChild(card);
     });
     const xc=isYoung(day)?null:extraCard(); if(xc) L.appendChild(xc);
@@ -1043,7 +1049,56 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       box.appendChild(t); });
     return box; }
   let myTests=[], allTests={}, myPers=[], allPers={};
+  // ---------- Foto dei lavori al remo ----------
+  let myLav=[], allLav={};
+  const lavKey=t=>nrm(t||"").replace(/[^a-z0-9]+/g," ").trim();
+  const dLav=d=>{ const p=String(d||"").split("-"); return p.length===3?p[2]+"/"+p[1]+"/"+p[0].slice(2):d; };
+  const bigUrl=u=>String(u||"").replace(/sz=w\d+/,"sz=w1600");
+  function remoTitlesToday(){ const out=[]; if(!DAYS[day]||DAYS[day].pesi) return out; const D=dayDef(day,group||1);
+    D.keys.filter(([k])=>/^R/.test(k)).forEach(([k])=>{ const ex=(norm(data[k]).esercizi||[]).filter(Boolean); let t="";
+      ex.forEach(x=>{ const m=/^\s*[—-]+\s*(.+?)\s*[—-]+\s*$/.exec(x); if(m&&!t) t=m[1]; }); if(!t&&ex.length) t=ex[0].slice(0,70); if(t&&!out.includes(t)) out.push(t); });
+    return out; }
+  function lavGallery(list,onDel){ const W=document.createElement("div"); if(!list.length){ W.innerHTML=`<p class="note">Nessuna foto ancora.</p>`; return W; }
+    const groups={}; list.forEach(r=>{ const k=r.chiave||lavKey(r.titolo); (groups[k]=groups[k]||{t:r.titolo,items:[]}).items.push(r); });
+    Object.values(groups).sort((a,b)=>Math.max(...b.items.map(x=>x.creato||0))-Math.max(...a.items.map(x=>x.creato||0))).forEach(g=>{
+      const h=document.createElement("p"); h.className="lavt"; h.textContent=g.t+" · "+g.items.length+(g.items.length===1?" volta":" volte"); W.appendChild(h);
+      const grid=document.createElement("div"); grid.className="lavgrid";
+      g.items.sort((a,b)=>(b.data||"").localeCompare(a.data||"")||(b.creato||0)-(a.creato||0)).forEach(r=>{ const c=document.createElement("figure"); c.className="lavph";
+        const a=document.createElement("a"); a.href=bigUrl(r.url); a.target="_blank"; a.rel="noopener"; const im=document.createElement("img"); im.loading="lazy"; im.src=r.url; im.alt="Foto del lavoro del "+dLav(r.data); a.appendChild(im); c.appendChild(a);
+        const fc=document.createElement("figcaption"); fc.textContent=dLav(r.data); c.appendChild(fc);
+        if(onDel){ const x=document.createElement("button"); x.type="button"; x.className="lavx"; x.textContent="✕"; x.title="Togli questa foto";
+          x.onclick=()=>{ if(!x.dataset.ok){ x.dataset.ok="1"; x.textContent="Togli?"; setTimeout(()=>{ x.dataset.ok=""; x.textContent="✕"; },3000); return; } onDel(r.id); }; c.appendChild(x); }
+        grid.appendChild(c); }); W.appendChild(grid); });
+    return W; }
+  async function shrink(file){ const url=URL.createObjectURL(file); try{ const img=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; });
+      const M=1280, r=Math.min(1,M/Math.max(img.width,img.height)); const c=document.createElement("canvas"); c.width=Math.round(img.width*r); c.height=Math.round(img.height*r);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height); return await new Promise(res=>c.toBlob(res,"image/jpeg",0.72)); } finally { URL.revokeObjectURL(url); } }
+  function renderLav(){ const S=$("mieiLavori"); if(!S) return; S.hidden=!uid; if(!uid) return; const B=$("lavBody"); B.innerHTML="";
+    const oggi=remoTitlesToday(), lib=alt.filter(a=>a.cat==="remo").map(a=>a.titolo).filter(Boolean).filter(t=>!oggi.includes(t)).sort((a,b)=>a.localeCompare(b,"it",{numeric:true}));
+    const f=document.createElement("div"); f.className="lavform";
+    f.innerHTML=`<label class="label">Che lavoro hai fatto?</label><select class="pl" id="lavSel">${oggi.length?`<optgroup label="Oggi">${oggi.map(t=>`<option>${t.replace(/</g,"&lt;")}</option>`).join("")}</optgroup>`:""}${lib.length?`<optgroup label="Libreria remo">${lib.map(t=>`<option>${t.replace(/</g,"&lt;")}</option>`).join("")}</optgroup>`:""}<option value="__altro">Altro (scrivi tu)…</option></select>
+      <input class="pl" id="lavAltro" placeholder="Nome del lavoro" hidden style="margin-top:6px">
+      <div class="row" style="margin-top:6px"><input type="date" class="pl" id="lavData" style="max-width:170px"><label class="btn" id="lavBtn" for="lavFile">📷 Carica la foto</label><input type="file" id="lavFile" accept="image/*" hidden></div>
+      <p class="note" id="lavMsg">Fotografa il monitor del remoergometro alla fine del lavoro: la ritrovi qui quando rifai lo stesso lavoro.</p>`;
+    B.appendChild(f); $("lavData").value=today();
+    $("lavSel").onchange=()=>{ $("lavAltro").hidden=$("lavSel").value!=="__altro"; };
+    $("lavFile").onchange=async()=>{ const fl=$("lavFile").files[0]; if(!fl) return; const sel=$("lavSel").value; const titolo=(sel==="__altro"?$("lavAltro").value:sel).trim();
+      if(!titolo){ $("lavMsg").textContent="Scrivi il nome del lavoro."; return; } $("lavMsg").textContent="Caricamento della foto…"; $("lavBtn").style.opacity=".5";
+      try{ const bl=await shrink(fl); const up=await window.MF.uploadFoto(bl,"lavoro_"+uid+"_"+Date.now()+".jpg");
+        const rec={id:"l"+Date.now().toString(36),titolo,chiave:lavKey(titolo),data:$("lavData").value||today(),url:up.url,fid:up.id,creato:Date.now()};
+        lavOk={t:Date.now(),m:"Foto caricata: «"+titolo+"»."}; await db.doc("lavori/"+uid).set({lista:myLav.concat([rec])}); }
+      catch(e){ lavOk=null; $("lavMsg").textContent="Foto non caricata: "+((e&&e.message)||"controlla la connessione")+"."; }
+      finally{ $("lavBtn").style.opacity=""; $("lavFile").value=""; } };
+    if(lavOk&&Date.now()-lavOk.t<10000){ $("lavMsg").textContent=lavOk.m; $("lavMsg").className="ok"; }
+    const h=document.createElement("p"); h.className="label"; h.style.marginTop="14px"; h.textContent="Le tue foto"; B.appendChild(h);
+    B.appendChild(lavGallery(myLav, async id=>{ await db.doc("lavori/"+uid).set({lista:myLav.filter(r=>r.id!==id)}); })); }
+  let lavOk=null, lavShown=false;
+  function prevLav(titles){ if(!uid||!myLav.length) return null; const ks=titles.map(lavKey); const list=myLav.filter(r=>ks.includes(r.chiave||lavKey(r.titolo)));
+    if(!list.length) return null; const d=document.createElement("div"); d.className="lavprev"; const p=document.createElement("p"); p.className="label"; p.textContent="📷 Le tue volte precedenti"; d.appendChild(p);
+    const grid=document.createElement("div"); grid.className="lavgrid sm"; list.sort((a,b)=>(b.data||"").localeCompare(a.data||"")).slice(0,4).forEach(r=>{ const c=document.createElement("figure"); c.className="lavph";
+      c.innerHTML=`<a href="${bigUrl(r.url)}" target="_blank" rel="noopener"><img loading="lazy" src="${r.url}" alt=""></a><figcaption>${dLav(r.data)}</figcaption>`; grid.appendChild(c); }); d.appendChild(grid); return d; }
   function renderMine(){
+    renderLav();
     const P=$("mioProg"), T=$("mieiTest");
     P.hidden=!(uid && myPers.length); T.hidden=!uid;
     if(uid && myPers.length){ const B=$("mioProgBody"); B.innerHTML="";
@@ -1147,6 +1202,7 @@ Viola; 2013; 4:17.3; 29; 2026-10-16`;
     const T=$("persTest"); T.innerHTML="";
     T.appendChild(testList(allTests[u]||[], async id=>{ await db.doc("test/"+u).set({risultati:(allTests[u]||[]).filter(r=>r.id!==id)}); }));
     T.appendChild(testForm(async r=>{ await db.doc("test/"+u).set({risultati:(allTests[u]||[]).concat([r])}); }));
+    const LV=$("persLav"); if(LV){ LV.innerHTML=""; LV.appendChild(lavGallery(allLav[u]||[], async id=>{ await db.doc("lavori/"+u).set({lista:(allLav[u]||[]).filter(r=>r.id!==id)}); })); }
   }
   $("altCatSel").onchange=()=>{ if(!altDraft) return; altDraft.cat=$("altCatSel").value; $("altExWrap").hidden=!altHasEx(altDraft.cat); };
   $("persAdd").onclick=()=>openAlt(null,persU);
@@ -1202,11 +1258,12 @@ Viola; 2013; 4:17.3; 29; 2026-10-16`;
         $("cok").onclick=async()=>{ const ok=await window.MF.coachLogin($("cpw").value); if(ok) location.reload(); else $("cmsg").textContent= ok===null?"Connessione assente.":"Password sbagliata."; }; }; } }
     subscribe();
     uid = user ? await user.id() : null; idChk=true; renderWho();
-    if(db && uid){ db.doc("personali/"+uid).onSnapshot(sn=>{ myPers=(sn.exists&&sn.data().lista)||[]; renderMine(); },()=>{}); db.doc("test/"+uid).onSnapshot(sn=>{ myTests=(sn.exists&&sn.data().risultati)||[]; renderMine(); },()=>{}); }
+    if(db && uid){ db.doc("personali/"+uid).onSnapshot(sn=>{ myPers=(sn.exists&&sn.data().lista)||[]; renderMine(); },()=>{}); db.doc("test/"+uid).onSnapshot(sn=>{ myTests=(sn.exists&&sn.data().risultati)||[]; renderMine(); },()=>{}); db.doc("lavori/"+uid).onSnapshot(sn=>{ myLav=(sn.exists&&sn.data().lista)||[]; renderLav(); renderList(); },()=>{}); }
     renderMine();
     if(db && coach){ $("testCoach").hidden=false;
       db.collection("personali").onSnapshot(qs=>{ allPers={}; qs.docs.forEach(x=>allPers[x.id]=(x.data()||{}).lista||[]); renderPers(); },()=>{});
-      db.collection("test").onSnapshot(qs=>{ allTests={}; qs.docs.forEach(x=>allTests[x.id]=(x.data()||{}).risultati||[]); renderTestCoach(); renderPers(); },()=>{}); }
+      db.collection("test").onSnapshot(qs=>{ allTests={}; qs.docs.forEach(x=>allTests[x.id]=(x.data()||{}).risultati||[]); renderTestCoach(); renderPers(); },()=>{});
+      db.collection("lavori").onSnapshot(qs=>{ allLav={}; qs.docs.forEach(x=>allLav[x.id]=(x.data()||{}).lista||[]); renderPers(); },()=>{}); }
     if(db && uid){ db.doc("presenze/"+uid).onSnapshot(sn=>{ const d=sn.exists?sn.data():null; myPres=(d&&d.giorni)||{}; renderPres(); },()=>{}); }
     renderPres();
     if(db && coach){ db.collection("presenze").onSnapshot(qs=>{ allPres=qs.docs.map(x=>({id:x.id,atleta:(x.data()||{}).atleta||"",giorni:(x.data()||{}).giorni||{}})); renderReg(); },()=>{}); }
