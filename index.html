@@ -86,6 +86,7 @@ tr.regp{cursor:pointer}.onep{display:grid;gap:2px;padding:4px 0 8px}.onep div{di
 .regchk{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}.regchk label{display:flex;align-items:center;gap:6px;font-size:15px}
 .late{margin-top:10px}.late summary{cursor:pointer;color:var(--muted);font-size:14px;text-decoration:underline}
 #testTab{overflow-x:auto;max-width:100%}
+.lavchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.lavchips .chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer}.lavchips .chip.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .lavfeed{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.lavitem{position:relative;margin:0}.lavitem img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;border:1px solid var(--line);display:block;background:var(--bg)}.lavitem figcaption{font-size:13px;line-height:1.25;margin-top:4px}.lavitem figcaption b{display:block;font-weight:600}.lavitem figcaption span{color:var(--muted)}
 .lavgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 10px}.lavgrid.sm{grid-template-columns:repeat(4,1fr)}.lavph{position:relative;margin:0}.lavph img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:var(--bg);display:block}.lavph figcaption{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}.lavx{position:absolute;top:4px;right:4px;border:0;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;padding:3px 7px;cursor:pointer}.lavt{font-weight:700;margin:10px 0 4px}.lavprev{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}label.btn{display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
 .tt3 .rn{font-weight:700;min-width:26px;color:var(--muted)}
@@ -347,7 +348,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   <section class="card" id="pres" hidden><div class="label">Presenza di oggi</div><div id="presBody"></div></section>
   <section class="card mine" id="mioProg" hidden><div class="label">Il tuo programma personale</div><div id="mioProgBody"></div></section>
   <details class="libwrap" id="mieiTest" hidden><summary>I miei test</summary><div id="testBody"></div><div class="row"><button type="button" class="btn sec dclose">Chiudi i test ▲</button></div></details>
-  <details class="libwrap" id="mieiLavori" hidden><summary>📷 I miei lavori al remo</summary><div id="lavBody"></div><div class="row"><button type="button" class="btn sec dclose">Chiudi ▲</button></div></details>
+  <details class="libwrap" id="mieiLavori" hidden><summary>📷 Le foto dei miei lavori</summary><div id="lavBody"></div><div class="row"><button type="button" class="btn sec dclose">Chiudi ▲</button></div></details>
   <figure class="card" id="pianta" style="margin:0"><div class="label">Pianta della palestra</div><div id="piantaSvg"></div><figcaption class="note" id="piantaCap"></figcaption></figure>
   <div class="tabata" id="tabata" hidden><span class="label">Tabata · uguale per tutti</span><b id="tabataTxt"></b></div>
   <div class="legend isl"><span class="tag remo">Remoergometro</span><span class="tag circ">Esercizi</span></div>
@@ -453,7 +454,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <div id="persLav"></div>
     <div class="row"><button type="button" class="btn sec" id="persClose">Chiudi</button></div>
   </div></dialog>
-  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 11/11/2026 19:33</p>
+  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 11/11/2026 19:40</p>
   <details class="coach" id="reg" hidden>
     <summary>Registro presenze</summary>
     <div class="field"><label for="regDate">Giorno</label><input type="date" id="regDate" style="font:inherit;border:1.5px solid var(--line);border-radius:8px;padding:6px;background:var(--bg);color:var(--ink)"></div>
@@ -598,7 +599,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       const gn=groupNote(v.gruppi); if(gn) card.appendChild(gn);
       if(v.note){ const n=document.createElement("p"); n.className="note"; n.textContent=v.note; card.appendChild(n); }
       if(!ex.length && !v.note && !gn){ const n=document.createElement("p"); n.className="note"; n.textContent=isR?"Indicazioni per il remo non ancora inserite.":"L'allenatore non ha ancora inserito gli esercizi per questa isola."; card.appendChild(n); }
-      if(isR&&!lavShown){ const pv=prevLav(remoTitlesToday()); if(pv){ card.appendChild(pv); lavShown=true; } }
       L.appendChild(card);
     });
     const xc=isYoung(day)?null:extraCard(); if(xc) L.appendChild(xc);
@@ -1076,28 +1076,34 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   async function shrink(file){ const url=URL.createObjectURL(file); try{ const img=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; });
       const M=1280, r=Math.min(1,M/Math.max(img.width,img.height)); const c=document.createElement("canvas"); c.width=Math.round(img.width*r); c.height=Math.round(img.height*r);
       c.getContext("2d").drawImage(img,0,0,c.width,c.height); return await new Promise(res=>c.toBlob(res,"image/jpeg",0.72)); } finally { URL.revokeObjectURL(url); } }
+  const LAVT={remo:"Remoergometro",pesi:"Pesi"}; let lavFilt="";
   function renderLav(){ const S=$("mieiLavori"); if(!S) return; S.hidden=!uid; if(!uid) return; const B=$("lavBody"); B.innerHTML="";
     const f=document.createElement("div"); f.className="lavform";
-    f.innerHTML=`<div class="row"><label class="btn" id="lavBtn" for="lavFile">📷 Carica la foto del lavoro</label><input type="file" id="lavFile" accept="image/*" hidden></div>
-      <p class="note" id="lavMsg">Alla fine del lavoro fotografa il monitor del remoergometro. L'app la abbina da sola al lavoro di oggi.</p>`;
+    f.innerHTML=`<p class="note" style="margin-top:0">Alla fine del lavoro fai una foto al monitor del remoergometro o alla tua scheda pesi.</p>
+      <div class="row"><label class="btn" id="lavBtnR" for="lavFileR">📷 Remoergometro</label><label class="btn" id="lavBtnP" for="lavFileP">📷 Pesi</label></div>
+      <input type="file" id="lavFileR" accept="image/*" hidden><input type="file" id="lavFileP" accept="image/*" hidden><p class="note" id="lavMsg"></p>`;
     B.appendChild(f);
-    $("lavFile").onchange=async()=>{ const fl=$("lavFile").files[0]; if(!fl) return; const titolo=remoTitlesToday()[0]||("Lavoro al remo · "+(DAYS[day]?DAYS[day].nome:""));
-      $("lavMsg").textContent="Caricamento della foto…"; $("lavBtn").style.opacity=".5";
+    const go=async(inp,tipo)=>{ const fl=inp.files[0]; if(!fl) return; $("lavMsg").className="note"; $("lavMsg").textContent="Caricamento della foto…";
       try{ const bl=await shrink(fl); const up=await window.MF.uploadFoto(bl,"lavoro_"+uid+"_"+Date.now()+".jpg");
-        const rec={id:"l"+Date.now().toString(36),titolo,chiave:lavKey(titolo),data:today(),url:up.url,fid:up.id,creato:Date.now()};
-        lavOk={t:Date.now(),m:"Foto caricata ("+titolo+")."}; await db.doc("lavori/"+uid).set({lista:myLav.concat([rec])}); }
+        const rec={id:"l"+Date.now().toString(36),tipo,titolo:LAVT[tipo],data:today(),url:up.url,fid:up.id,creato:Date.now()};
+        lavOk={t:Date.now(),m:"Foto caricata ("+LAVT[tipo]+")."}; await db.doc("lavori/"+uid).set({lista:myLav.concat([rec])}); }
       catch(e){ lavOk=null; $("lavMsg").textContent="Foto non caricata: "+((e&&e.message)||"controlla la connessione")+"."; }
-      finally{ $("lavBtn").style.opacity=""; $("lavFile").value=""; } };
+      finally{ inp.value=""; } };
+    $("lavFileR").onchange=()=>go($("lavFileR"),"remo"); $("lavFileP").onchange=()=>go($("lavFileP"),"pesi");
     if(lavOk&&Date.now()-lavOk.t<10000){ $("lavMsg").textContent=lavOk.m; $("lavMsg").className="ok"; }
     B.appendChild(lavFeed(myLav, async id=>{ await db.doc("lavori/"+uid).set({lista:myLav.filter(r=>r.id!==id)}); })); }
-  function lavFeed(list,onDel){ const W=document.createElement("div"); W.className="lavfeed"; if(!list.length){ W.innerHTML=`<p class="note">Nessuna foto ancora.</p>`; return W; }
+  function lavFeed(all,onDel){ const O=document.createElement("div"); if(!all.length){ O.innerHTML=`<p class="note">Nessuna foto ancora.</p>`; return O; }
+    const tipoOf=r=>r.tipo||(/pesi/i.test(r.titolo||"")&&!/remo/i.test(r.titolo||"")?"pesi":"remo");
+    const ch=document.createElement("div"); ch.className="lavchips"; [["","Tutte"],["remo","Remoergometro"],["pesi","Pesi"]].forEach(([k,l])=>{ const b=document.createElement("button"); b.type="button"; b.className="chip"+(lavFilt===k?" on":""); b.textContent=l+" ("+(k?all.filter(r=>tipoOf(r)===k).length:all.length)+")"; b.onclick=()=>{ lavFilt=k; renderLav(); renderPers(); }; ch.appendChild(b); }); O.appendChild(ch);
+    const W=document.createElement("div"); W.className="lavfeed"; O.appendChild(W); const list=all.filter(r=>!lavFilt||tipoOf(r)===lavFilt);
+    if(!list.length){ W.innerHTML=`<p class="note">Nessuna foto.</p>`; return O; }
     list.slice().sort((a,b)=>(b.data||"").localeCompare(a.data||"")||(b.creato||0)-(a.creato||0)).forEach(r=>{ const c=document.createElement("figure"); c.className="lavitem";
       const a=document.createElement("a"); a.href=bigUrl(r.url); a.target="_blank"; a.rel="noopener"; const im=document.createElement("img"); im.loading="lazy"; im.src=r.url; im.alt="Foto del lavoro"; a.appendChild(im); c.appendChild(a);
-      const fc=document.createElement("figcaption"); fc.innerHTML=`<b></b><span></span>`; fc.querySelector("b").textContent=r.titolo||"Lavoro al remo"; fc.querySelector("span").textContent=dLav(r.data); c.appendChild(fc);
+      const fc=document.createElement("figcaption"); fc.innerHTML=`<b></b><span></span>`; fc.querySelector("b").textContent=LAVT[tipoOf(r)]; fc.querySelector("span").textContent=dLav(r.data); c.appendChild(fc);
       if(onDel){ const x=document.createElement("button"); x.type="button"; x.className="lavx"; x.textContent="✕"; x.title="Togli questa foto";
         x.onclick=()=>{ if(!x.dataset.ok){ x.dataset.ok="1"; x.textContent="Togli?"; setTimeout(()=>{ x.dataset.ok=""; x.textContent="✕"; },3000); return; } onDel(r.id); }; c.appendChild(x); }
       W.appendChild(c); });
-    return W; }
+    return O; }
   let lavOk=null, lavShown=false;
   function prevLav(titles){ if(!uid||!myLav.length) return null; const ks=titles.map(lavKey); const list=myLav.filter(r=>ks.includes(r.chiave||lavKey(r.titolo))&&r.data!==today());
     if(!list.length) return null; const d=document.createElement("div"); d.className="lavprev"; const p=document.createElement("p"); p.className="label"; p.textContent="📷 Le tue volte precedenti"; d.appendChild(p);
