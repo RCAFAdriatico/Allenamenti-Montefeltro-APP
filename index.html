@@ -455,7 +455,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <div id="persLav"></div>
     <div class="row"><button type="button" class="btn sec" id="persClose">Chiudi</button></div>
   </div></dialog>
-  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 12/11/2026 09:12</p>
+  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 12/11/2026 09:17</p>
   <details class="coach" id="reg" hidden>
     <summary>Registro presenze</summary>
     <div class="field"><label for="regDate">Giorno</label><input type="date" id="regDate" style="font:inherit;border:1.5px solid var(--line);border-radius:8px;padding:6px;background:var(--bg);color:var(--ink)"></div>
@@ -1084,15 +1084,16 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       <div class="row"><button type="button" class="btn" id="lavBtnR">📷 Remoergometro</button><button type="button" class="btn" id="lavBtnP">📷 Pesi</button></div>
       <input type="file" id="lavFileR" accept="image/*" class="vhid"><input type="file" id="lavFileP" accept="image/*" class="vhid"><p class="note" id="lavMsg"></p>`;
     B.appendChild(f);
-    const go=async(inp,tipo)=>{ const fl=inp.files[0]; if(!fl) return; $("lavMsg").className="note"; $("lavMsg").textContent="Caricamento della foto…";
+    const go=async(inp,tipo)=>{ const fl=inp.files[0]; if(!fl) return; lavOk={t:Date.now(),m:"Caricamento della foto… (non chiudere l'app)",c:"note",keep:true}; $("lavMsg").className="note"; $("lavMsg").textContent=lavOk.m;
       try{ const bl=await shrink(fl); const up=await window.MF.uploadFoto(bl,"lavoro_"+uid+"_"+Date.now()+".jpg");
         const rec={id:"l"+Date.now().toString(36),tipo,titolo:LAVT[tipo],data:today(),url:up.url,fid:up.id,creato:Date.now()};
         lavOk={t:Date.now(),m:"Foto caricata ("+LAVT[tipo]+")."}; await db.doc("lavori/"+uid).set({lista:myLav.concat([rec])}); }
-      catch(e){ lavOk=null; $("lavMsg").textContent="Foto non caricata: "+((e&&e.message)||"controlla la connessione")+"."; }
+      catch(e){ const m=(e&&e.message)||String(e||""); lavOk={t:Date.now(),m:"⚠️ Foto non caricata: "+(m==="Non autorizzato"||m==="Azione sconosciuta"?m+" (lo script del foglio va aggiornato: avvisa l'allenatore)":m||"controlla la connessione")+".",c:"err",keep:true}; renderLav(); }
       finally{ inp.value=""; } };
     $("lavFileR").onchange=()=>go($("lavFileR"),"remo"); $("lavFileP").onchange=()=>go($("lavFileP"),"pesi");
     $("lavBtnR").onclick=()=>$("lavFileR").click(); $("lavBtnP").onclick=()=>$("lavFileP").click();
-    if(lavOk&&Date.now()-lavOk.t<10000){ $("lavMsg").textContent=lavOk.m; $("lavMsg").className="ok"; }
+    if(lavOk&&(lavOk.keep?Date.now()-lavOk.t<120000:Date.now()-lavOk.t<10000)){ $("lavMsg").textContent=lavOk.m; $("lavMsg").className=lavOk.c||"ok"; if(lavOk.c==="err") $("lavMsg").style.color="var(--red)"; }
+    if(!myLav.length){ const h=document.createElement("p"); h.className="note"; h.textContent="Qui sotto compariranno le tue foto."; B.appendChild(h); }
     B.appendChild(lavFeed(myLav, async id=>{ await db.doc("lavori/"+uid).set({lista:myLav.filter(r=>r.id!==id)}); })); }
   function lavFeed(all,onDel){ const O=document.createElement("div"); if(!all.length){ O.innerHTML=`<p class="note">Nessuna foto ancora.</p>`; return O; }
     const tipoOf=r=>r.tipo||(/pesi/i.test(r.titolo||"")&&!/remo/i.test(r.titolo||"")?"pesi":"remo");
