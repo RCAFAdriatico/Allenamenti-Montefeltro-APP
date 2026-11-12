@@ -86,6 +86,7 @@ tr.regp{cursor:pointer}.onep{display:grid;gap:2px;padding:4px 0 8px}.onep div{di
 .regchk{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}.regchk label{display:flex;align-items:center;gap:6px;font-size:15px}
 .late{margin-top:10px}.late summary{cursor:pointer;color:var(--muted);font-size:14px;text-decoration:underline}
 #testTab{overflow-x:auto;max-width:100%}
+.vhid{position:absolute!important;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none;left:0}
 .lavchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.lavchips .chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer}.lavchips .chip.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .lavfeed{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.lavitem{position:relative;margin:0}.lavitem img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;border:1px solid var(--line);display:block;background:var(--bg)}.lavitem figcaption{font-size:13px;line-height:1.25;margin-top:4px}.lavitem figcaption b{display:block;font-weight:600}.lavitem figcaption span{color:var(--muted)}
 .lavgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 10px}.lavgrid.sm{grid-template-columns:repeat(4,1fr)}.lavph{position:relative;margin:0}.lavph img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:var(--bg);display:block}.lavph figcaption{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}.lavx{position:absolute;top:4px;right:4px;border:0;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;padding:3px 7px;cursor:pointer}.lavt{font-weight:700;margin:10px 0 4px}.lavprev{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}label.btn{display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
@@ -454,7 +455,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
     <div id="persLav"></div>
     <div class="row"><button type="button" class="btn sec" id="persClose">Chiudi</button></div>
   </div></dialog>
-  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 11/11/2026 19:40</p>
+  <div id="coachLink" style="text-align:center"></div><p class="note" id="appVer" style="text-align:center;font-size:12px">Versione dell'app: 12/11/2026 09:12</p>
   <details class="coach" id="reg" hidden>
     <summary>Registro presenze</summary>
     <div class="field"><label for="regDate">Giorno</label><input type="date" id="regDate" style="font:inherit;border:1.5px solid var(--line);border-radius:8px;padding:6px;background:var(--bg);color:var(--ink)"></div>
@@ -1080,8 +1081,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
   function renderLav(){ const S=$("mieiLavori"); if(!S) return; S.hidden=!uid; if(!uid) return; const B=$("lavBody"); B.innerHTML="";
     const f=document.createElement("div"); f.className="lavform";
     f.innerHTML=`<p class="note" style="margin-top:0">Alla fine del lavoro fai una foto al monitor del remoergometro o alla tua scheda pesi.</p>
-      <div class="row"><label class="btn" id="lavBtnR" for="lavFileR">📷 Remoergometro</label><label class="btn" id="lavBtnP" for="lavFileP">📷 Pesi</label></div>
-      <input type="file" id="lavFileR" accept="image/*" hidden><input type="file" id="lavFileP" accept="image/*" hidden><p class="note" id="lavMsg"></p>`;
+      <div class="row"><button type="button" class="btn" id="lavBtnR">📷 Remoergometro</button><button type="button" class="btn" id="lavBtnP">📷 Pesi</button></div>
+      <input type="file" id="lavFileR" accept="image/*" class="vhid"><input type="file" id="lavFileP" accept="image/*" class="vhid"><p class="note" id="lavMsg"></p>`;
     B.appendChild(f);
     const go=async(inp,tipo)=>{ const fl=inp.files[0]; if(!fl) return; $("lavMsg").className="note"; $("lavMsg").textContent="Caricamento della foto…";
       try{ const bl=await shrink(fl); const up=await window.MF.uploadFoto(bl,"lavoro_"+uid+"_"+Date.now()+".jpg");
@@ -1090,6 +1091,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyA4VaS3jE8Rqo155aA_-ym
       catch(e){ lavOk=null; $("lavMsg").textContent="Foto non caricata: "+((e&&e.message)||"controlla la connessione")+"."; }
       finally{ inp.value=""; } };
     $("lavFileR").onchange=()=>go($("lavFileR"),"remo"); $("lavFileP").onchange=()=>go($("lavFileP"),"pesi");
+    $("lavBtnR").onclick=()=>$("lavFileR").click(); $("lavBtnP").onclick=()=>$("lavFileP").click();
     if(lavOk&&Date.now()-lavOk.t<10000){ $("lavMsg").textContent=lavOk.m; $("lavMsg").className="ok"; }
     B.appendChild(lavFeed(myLav, async id=>{ await db.doc("lavori/"+uid).set({lista:myLav.filter(r=>r.id!==id)}); })); }
   function lavFeed(all,onDel){ const O=document.createElement("div"); if(!all.length){ O.innerHTML=`<p class="note">Nessuna foto ancora.</p>`; return O; }
